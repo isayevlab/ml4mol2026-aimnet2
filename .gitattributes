@@ -1,0 +1,13 @@
+# Keep everything LF in the repository so notebooks and HTML stay byte-identical
+# across macOS, Linux and Windows checkouts.
+* text=auto eol=lf
+
+*.ipynb  text eol=lf
+*.py     text eol=lf
+*.html   text eol=lf
+*.md     text eol=lf
+*.txt    text eol=lf
+
+*.png    binary
+*.jpg    binary
+*.pdf    binary

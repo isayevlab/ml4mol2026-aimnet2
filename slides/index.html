@@ -1,0 +1,2530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Machine-Learned Potentials Tutorial</title>
+<meta name="description" content="Hands-on AIMNet2 tutorial. AiMat Summer School 2026, Machine Learning for Molecules.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<style>
+/* ---- Carnegie Mellon core palette (brand.cmu.edu/visual-identity/colors) ---- */
+:root{
+  --red:#C41230;        /* Carnegie Red */
+  --black:#000000;
+  --iron:#6D6E71;       /* Iron Gray  */
+  --steel:#E0E0E0;      /* Steel Gray */
+  --white:#FFFFFF;
+  --code-bg:#F6F6F7;
+
+  --serif:"Source Serif 4","Source Serif Pro",Times,"Times New Roman",serif;
+  --sans:"Open Sans",Helvetica,Arial,sans-serif;
+  --mono:"Source Code Pro",ui-monospace,Menlo,Consolas,monospace;
+
+  --W:1280px; --H:720px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--white);color:var(--black);
+  font-family:var(--sans);
+  overflow:hidden;-webkit-font-smoothing:antialiased;
+}
+#stageWrap{position:fixed;inset:0;display:grid;place-items:center}
+#stage{
+  width:var(--W);height:var(--H);position:relative;
+  transform-origin:center center;background:var(--white);
+}
+
+/* ---------------------------- slide shell ---------------------------- */
+.slide{
+  position:absolute;inset:0;padding:64px 80px 68px;
+  display:none;flex-direction:column;
+}
+.slide.on{display:flex}
+.slide.center{justify-content:center}
+
+.eyebrow{
+  font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--red);margin-bottom:14px;
+}
+.eyebrow.grey{color:var(--iron)}
+h1{font-family:var(--serif);font-size:62px;line-height:1.05;font-weight:700;letter-spacing:-.015em}
+h2{
+  font-family:var(--serif);font-size:42px;line-height:1.1;font-weight:600;
+  letter-spacing:-.01em;padding-bottom:16px;margin-bottom:28px;
+  border-bottom:3px solid var(--red);
+}
+h2.plain{border-bottom:0;padding-bottom:0;margin-bottom:20px}
+h3{font-family:var(--sans);font-size:20px;font-weight:700;letter-spacing:-.005em}
+p,li{font-size:21px;line-height:1.5;color:#1b1b1d}
+.lead{font-size:26px;line-height:1.42;color:#1b1b1d;max-width:34em}
+.sub{font-size:19px;color:var(--iron);line-height:1.5}
+strong{font-weight:700}
+em{font-style:normal;color:var(--red);font-weight:600}
+ul{list-style:none;display:flex;flex-direction:column;gap:14px}
+ul li{padding-left:26px;position:relative}
+ul li::before{
+  content:"";position:absolute;left:0;top:.62em;
+  width:9px;height:9px;background:var(--red);
+}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;align-items:start}
+.grow{flex:1;display:flex;flex-direction:column;justify-content:center}
+.stack{display:flex;flex-direction:column;gap:18px}
+.tight{gap:10px}
+
+
+/* ---------------------------- structures ---------------------------- */
+figure.mol{display:flex;flex-direction:column;align-items:center;gap:4px;margin:0}
+figure.mol .d{display:flex;align-items:center;justify-content:center}
+figure.mol .d svg{max-width:100%;height:auto;display:block}
+figure.mol figcaption{font-size:15px;color:var(--iron);text-align:center;line-height:1.3}
+figure.mol figcaption code{font-size:14px}
+figure.mol figcaption strong{color:#000}
+
+.molgrid{display:grid;gap:10px 18px;align-items:end}
+.molgrid.six{grid-template-columns:repeat(3,1fr)}
+.molgrid.nine{grid-template-columns:repeat(3,1fr);gap:6px 14px}
+
+.rxnrow{display:flex;align-items:center;justify-content:center;gap:16px}
+.arrow{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:96px}
+.arrow span{font-size:14px;color:var(--iron);letter-spacing:.02em}
+.arrow::after{content:"";display:block;width:88px;height:0;
+  border-top:2px solid var(--iron);position:relative}
+.arrow::before{content:"";order:3;width:0;height:0;
+  border-left:9px solid var(--iron);border-top:5px solid transparent;
+  border-bottom:5px solid transparent;margin-left:86px;margin-top:-6px}
+
+/* a pair of tautomers, side by side with a reversible arrow */
+.pairgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 16px}
+.pairbox{display:flex;flex-direction:column;gap:2px;border-top:2px solid var(--steel);padding-top:8px}
+.pairbox.hi{border-top-color:var(--red)}
+.pairbox .seat{font-family:var(--mono);font-size:13px;color:var(--red);font-weight:600}
+.pairbox .nm{font-size:14px;line-height:1.25;color:#1b1b1d;min-height:2.5em}
+.pairbox .two{display:flex;align-items:center;justify-content:center;gap:2px}
+.pairbox .two svg{max-width:100%;height:auto}
+.eq{font-size:17px;color:var(--iron);flex:none}
+
+
+.rxnlist{display:flex;flex-direction:column;gap:2px}
+.rxnitem{display:grid;grid-template-columns:72px 300px 1fr 90px;gap:16px;
+  align-items:center;padding:4px 0;border-bottom:1px solid var(--steel)}
+.rxnitem .seat{font-family:var(--mono);font-size:13px;color:var(--red);font-weight:600}
+.rxnitem .sch{display:flex;align-items:center;justify-content:center}
+.rxnitem .sch svg{width:100%;height:auto;max-height:76px}
+.rxnitem .meta{display:flex;flex-direction:column;gap:1px;min-width:0}
+.rxnitem .meta .t{font-size:18px;font-weight:600;color:#1b1b1d}
+.rxnitem .meta .w{font-size:15px;color:var(--iron);line-height:1.3}
+.rxnitem .nu{font-family:var(--mono);font-size:20px;text-align:right;
+  font-variant-numeric:tabular-nums;color:#1b1b1d}
+
+/* ---------------------------- components ---------------------------- */
+code,.mono{font-family:var(--mono)}
+pre{
+  font-family:var(--mono);font-size:19px;line-height:1.62;
+  background:var(--code-bg);border-left:4px solid var(--red);
+  padding:20px 24px;white-space:pre;overflow:hidden;color:#1b1b1d;
+}
+pre b{font-weight:600;color:var(--black)}
+pre i{font-style:normal;color:var(--iron)}
+p code,li code,td code{
+  font-size:.92em;background:var(--code-bg);padding:1px 6px;border-radius:2px;
+}
+
+table{border-collapse:collapse;width:100%;font-size:19px}
+th{
+  text-align:left;font-size:14px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--iron);
+  padding:0 14px 9px 0;border-bottom:2px solid var(--black);white-space:nowrap;
+}
+td{padding:11px 14px 11px 0;border-bottom:1px solid var(--steel);vertical-align:top;line-height:1.35}
+td:first-child{font-weight:600}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;padding-right:22px}
+th.asis{text-transform:none;letter-spacing:.02em;font-size:15px}
+tr.hi td{background:#FCEEF0}
+
+.chip{
+  display:inline-block;font-size:14px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;padding:5px 11px;background:var(--red);color:#fff;
+}
+.chip.ghost{background:transparent;color:var(--iron);border:1.5px solid var(--steel)}
+
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .n{
+  font-family:var(--serif);font-size:56px;font-weight:700;line-height:1;
+  color:var(--red);font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+}
+.stat .l{font-size:16px;color:var(--iron);line-height:1.35}
+.statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:26px}
+
+.callout{border-left:4px solid var(--red);padding:4px 0 4px 22px}
+.callout .k{font-size:16px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+
+.rule{height:1px;background:var(--steel)}
+
+/* activity slides: a red spine instead of a tint, so the ground stays white */
+.slide.act{border-left:14px solid var(--red);padding-left:66px}
+
+/* section dividers */
+.divider{justify-content:center}
+.divider .clock{
+  font-family:var(--mono);font-size:22px;font-weight:600;color:var(--red);
+  letter-spacing:.04em;margin-bottom:8px;
+}
+.divider h1{font-size:72px;max-width:20em}
+.divider .note{font-size:22px;color:var(--iron);margin-top:22px;max-width:36em;line-height:1.45}
+
+/* title slide */
+.title-slide{justify-content:space-between}
+.title-rule{width:120px;height:6px;background:var(--red);margin:30px 0 26px}
+.wordmark{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.01em}
+.wordmark span{color:var(--red)}
+
+/* running furniture */
+.foot{
+  position:absolute;left:80px;right:80px;bottom:26px;
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-size:14px;color:var(--iron);letter-spacing:.02em;
+}
+.slide.act .foot{left:66px}
+.foot .who{font-weight:600}
+#bar{position:absolute;left:0;bottom:0;height:4px;background:var(--red);width:0;transition:width .18s ease}
+
+/* overview */
+#ov{position:fixed;inset:0;background:#fff;overflow:auto;padding:28px;display:none;z-index:40}
+#ov.on{display:block}
+#ov h4{font-family:var(--sans);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--iron);margin-bottom:16px}
+#ovg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.ovi{border:1px solid var(--steel);padding:12px 14px;cursor:pointer;background:#fff;text-align:left;font-family:var(--sans)}
+.ovi:hover,.ovi:focus-visible{border-color:var(--red);outline:none}
+.ovi .n{font-family:var(--mono);font-size:12px;color:var(--red);font-weight:600}
+.ovi .t{font-size:14px;line-height:1.3;margin-top:4px;color:#1b1b1d}
+
+#help{
+  position:fixed;right:14px;top:12px;font-size:12px;color:var(--iron);
+  font-family:var(--sans);z-index:30;background:#fff;padding:4px 8px;
+  opacity:1;transition:opacity .6s ease;pointer-events:none;
+}
+#help.hide{opacity:0}
+@media (max-width:700px){#help{display:none}}
+
+@media print{
+  @page{size:1280px 720px;margin:0}
+  body,html{overflow:visible;height:auto}
+  #stageWrap{position:static;display:block}
+  #stage{transform:none!important;width:1280px;height:720px}
+  .slide{display:flex!important;position:relative;page-break-after:always;width:1280px;height:720px}
+  #help,#ov,#bar{display:none!important}
+}
+</style>
+</head>
+<body>
+<div id="stageWrap"><div id="stage"></div></div>
+<div id="ov"><h4>All slides — click to jump, Esc to close</h4><div id="ovg"></div></div>
+<div id="help">← → navigate · O overview · F fullscreen · P print</div>
+
+<script>
+const FOOT = '<div class="foot"><span class="who">AIMNet2 &middot; AiMat Summer School 2026</span><span class="pg"></span></div>';
+
+const SLIDES = [
+`<div class="slide title-slide">
+  <div class="wordmark">Carnegie Mellon University<span> · </span>Isayev Laboratory</div>
+  <div>
+    <div class="eyebrow">Hands-on tutorial · 90 minutes</div>
+    <h1>Machine-learned potentials<br>for molecular chemistry</h1>
+    <div class="title-rule"></div>
+    <p class="sub" style="font-size:21px">
+      <strong style="color:#000">Olexandr Isayev</strong> &nbsp;·&nbsp; Carnegie Mellon University<br>
+      AiMat Summer School 2026 &mdash; <em>Machine Learning for Molecules</em> &nbsp;·&nbsp; Karlsruhe
+    </p>
+  </div>
+  <div class="sub mono" style="font-size:17px">github.com/isayevlab/ml4mol2026-aimnet2</div>
+</div>`,
+
+`<div class="slide center" style="align-items:flex-start">
+  <div class="eyebrow">Please do this before we begin</div>
+  <h1 style="font-size:66px;margin-bottom:24px">Open notebook 0<br>and run the first cell.</h1>
+  <div class="cols" style="width:100%">
+    <p class="lead" style="font-size:23px">It takes about a minute. It installs the package and downloads the model parameters, once per machine, with no progress output.</p>
+    <div class="stack tight">
+      <p class="sub"><strong>On Colab:</strong> Runtime &rarr; Change runtime type &rarr; <strong>T4 GPU</strong>. Nothing to clone.</p>
+      <p class="sub">Everything also runs on CPU, five to twenty times more slowly.</p>
+    </div>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">The central idea</div>
+  <h2>Almost everything follows from one function</h2>
+  <div class="cols" style="align-items:center">
+    <div class="stack">
+      <div class="callout">
+        <div class="k">Potential energy surface</div>
+        <p style="font-size:20px">For a molecule of <em>N</em> atoms, the potential energy <em>E</em> depends on the 3<em>N</em> coordinates of those atoms. The function <em>E</em>(<strong>R</strong>) is the potential energy surface.</p>
+      </div>
+      <p class="sub">Every structural, spectroscopic and kinetic property in this tutorial is a statement about the shape of that surface.</p>
+    </div>
+    <table>
+      <tr><th>Feature of the surface</th><th>Chemical meaning</th></tr>
+      <tr><td>a local minimum</td><td class="sub">a stable structure</td></tr>
+      <tr><td>relative depths of minima</td><td class="sub">which form is populated</td></tr>
+      <tr><td>curvature at a minimum</td><td class="sub">vibrational frequencies, the infrared spectrum</td></tr>
+      <tr><td>a first-order saddle point</td><td class="sub">a transition state, an activation barrier</td></tr>
+      <tr><td>motion on the surface</td><td class="sub">molecular dynamics</td></tr>
+    </table>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">Where the surface comes from</div>
+  <h2>Quantum mechanics is accurate; it is also far too slow</h2>
+  <div class="stack">
+    <p class="lead">Solving the electronic Schr&ouml;dinger equation for every geometry is the correct procedure. Density functional theory makes it tractable, at seconds to hours per structure. Every task on the previous slide requires hundreds to millions of such evaluations.</p>
+    <div class="callout">
+      <div class="k">Machine-learned interatomic potential</div>
+      <p style="font-size:20px">A model, here a neural network, trained to reproduce the energies and forces of a reference quantum chemistry method. It evaluates in milliseconds rather than minutes, at close to the accuracy of the method it was trained on.</p>
+    </div>
+    <p class="sub"><strong>AIMNet2</strong> was trained on approximately twenty million density functional calculations.</p>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide center">
+  <div class="eyebrow">What distinguishes this model</div>
+  <h1 style="font-size:54px;line-height:1.1;max-width:20em">
+    Total charge and spin multiplicity are <em>inputs to the network</em>, and the partial charge distribution is an output.
+  </h1>
+  <p class="lead" style="margin-top:28px;color:var(--iron)">
+    Most machine-learned potentials for organic molecules accept only atomic positions and atomic numbers, and are therefore defined only for neutral, closed-shell species. Anions, cations and radicals are inaccessible to them.
+  </p>
+  <p class="sub" style="margin-top:18px;font-size:20px">This is used directly in the final exercise, where reactivity is obtained from the energies and charges of a molecule with one electron added and one removed.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">Coverage</div>
+  <h2>Fourteen elements</h2>
+  <div class="molgrid six">
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='163px' height='141px' viewBox='18.5 -5.5 163.0 141.0'><ellipse cx='94.9' cy='53.1' rx='9.9' ry='9.9' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 24.5,13.9 L 60.9,13.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 77.5,24.0 L 88.6,42.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 98.3,65.5 L 109.5,84.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 104.3,61.9 L 115.5,80.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 86.7,58.0 L 65.1,70.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 55.2,87.9 L 55.8,123.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 103.2,48.1 L 124.8,35.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 144.9,34.7 L 175.5,51.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 65.0 13.2
+Q 65.0 10.0, 66.5 8.3
+Q 68.1 6.5, 71.0 6.5
+Q 73.9 6.5, 75.5 8.3
+Q 77.1 10.0, 77.1 13.2
+Q 77.1 16.4, 75.5 18.2
+Q 73.9 20.0, 71.0 20.0
+Q 68.1 20.0, 66.5 18.2
+Q 65.0 16.4, 65.0 13.2
+M 71.0 18.5
+Q 73.0 18.5, 74.1 17.2
+Q 75.2 15.8, 75.2 13.2
+Q 75.2 10.6, 74.1 9.3
+Q 73.0 8.0, 71.0 8.0
+Q 69.0 8.0, 67.9 9.3
+Q 66.8 10.6, 66.8 13.2
+Q 66.8 15.9, 67.9 17.2
+Q 69.0 18.5, 71.0 18.5
+' fill='#000000'/><path d='M 94.6 46.5
+Q 96.9 46.5, 98.0 47.5
+Q 99.1 48.5, 99.1 50.3
+Q 99.1 52.2, 98.0 53.2
+Q 96.8 54.2, 94.6 54.2
+L 92.5 54.2
+L 92.5 59.6
+L 90.7 59.6
+L 90.7 46.5
+L 94.6 46.5
+M 94.6 52.7
+Q 95.9 52.7, 96.6 52.1
+Q 97.3 51.5, 97.3 50.3
+Q 97.3 49.2, 96.6 48.6
+Q 95.9 48.0, 94.6 48.0
+L 92.5 48.0
+L 92.5 52.7
+L 94.6 52.7
+' fill='#000000'/><path d='M 112.8 93.0
+Q 112.8 89.8, 114.4 88.1
+Q 116.0 86.3, 118.9 86.3
+Q 121.8 86.3, 123.4 88.1
+Q 124.9 89.8, 124.9 93.0
+Q 124.9 96.2, 123.3 98.0
+Q 121.8 99.8, 118.9 99.8
+Q 116.0 99.8, 114.4 98.0
+Q 112.8 96.2, 112.8 93.0
+M 118.9 98.3
+Q 120.9 98.3, 122.0 97.0
+Q 123.1 95.6, 123.1 93.0
+Q 123.1 90.4, 122.0 89.1
+Q 120.9 87.8, 118.9 87.8
+Q 116.9 87.8, 115.8 89.1
+Q 114.7 90.4, 114.7 93.0
+Q 114.7 95.6, 115.8 97.0
+Q 116.9 98.3, 118.9 98.3
+' fill='#000000'/><path d='M 49.0 77.0
+Q 49.0 73.9, 50.6 72.1
+Q 52.1 70.3, 55.0 70.3
+Q 58.0 70.3, 59.5 72.1
+Q 61.1 73.9, 61.1 77.0
+Q 61.1 80.2, 59.5 82.0
+Q 57.9 83.9, 55.0 83.9
+Q 52.1 83.9, 50.6 82.0
+Q 49.0 80.2, 49.0 77.0
+M 55.0 82.4
+Q 57.1 82.4, 58.1 81.0
+Q 59.2 79.7, 59.2 77.0
+Q 59.2 74.4, 58.1 73.1
+Q 57.1 71.8, 55.0 71.8
+Q 53.0 71.8, 51.9 73.1
+Q 50.9 74.4, 50.9 77.0
+Q 50.9 79.7, 51.9 81.0
+Q 53.0 82.4, 55.0 82.4
+' fill='#000000'/><path d='M 128.8 29.2
+Q 128.8 26.0, 130.3 24.2
+Q 131.9 22.5, 134.8 22.5
+Q 137.8 22.5, 139.3 24.2
+Q 140.9 26.0, 140.9 29.2
+Q 140.9 32.4, 139.3 34.2
+Q 137.7 36.0, 134.8 36.0
+Q 131.9 36.0, 130.3 34.2
+Q 128.8 32.4, 128.8 29.2
+M 134.8 34.5
+Q 136.8 34.5, 137.9 33.2
+Q 139.0 31.8, 139.0 29.2
+Q 139.0 26.6, 137.9 25.3
+Q 136.8 24.0, 134.8 24.0
+Q 132.8 24.0, 131.7 25.3
+Q 130.6 26.6, 130.6 29.2
+Q 130.6 31.8, 131.7 33.2
+Q 132.8 34.5, 134.8 34.5
+' fill='#000000'/></svg></div><figcaption>trimethyl phosphate</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='192px' height='110px' viewBox='4.0 10.0 192.0 110.0'><ellipse cx='42.3' cy='62.6' rx='8.8' ry='8.8' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 11.2,35.5 L 35.0,56.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 51.9,56.0 L 63.2,43.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 47.2,52.0 L 58.5,38.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 32.7,68.8 L 21.2,82.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.3,72.8 L 25.9,86.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 49.6,68.7 L 65.4,82.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 81.3,86.6 L 112.3,75.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 112.3,75.9 L 120.0,35.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 119.0,73.5 L 125.4,40.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 120.0,35.5 L 158.9,22.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 158.9,22.0 L 190.0,48.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 157.6,29.0 L 183.3,51.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 190.0,48.9 L 182.2,89.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 182.2,89.3 L 143.4,102.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 176.8,84.7 L 144.7,95.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 143.4,102.8 L 112.3,75.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 119.6,37.5 L 120.0,35.5 L 122.0,34.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 157.0,22.7 L 158.9,22.0 L 160.5,23.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 188.4,47.6 L 190.0,48.9 L 189.6,51.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 182.6,87.3 L 182.2,89.3 L 180.3,90.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 145.3,102.1 L 143.4,102.8 L 141.8,101.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 39.0 66.4
+Q 39.1 66.5, 39.7 66.7
+Q 40.2 66.9, 40.8 67.1
+Q 41.4 67.2, 42.0 67.2
+Q 43.1 67.2, 43.7 66.7
+Q 44.4 66.1, 44.4 65.2
+Q 44.4 64.6, 44.1 64.2
+Q 43.7 63.8, 43.3 63.5
+Q 42.8 63.3, 41.9 63.1
+Q 40.9 62.8, 40.3 62.5
+Q 39.7 62.2, 39.2 61.6
+Q 38.8 60.9, 38.8 59.9
+Q 38.8 58.4, 39.8 57.5
+Q 40.8 56.6, 42.8 56.6
+Q 44.1 56.6, 45.6 57.2
+L 45.3 58.5
+Q 43.9 57.9, 42.8 57.9
+Q 41.7 57.9, 41.0 58.4
+Q 40.4 58.9, 40.4 59.7
+Q 40.4 60.3, 40.8 60.7
+Q 41.1 61.1, 41.5 61.3
+Q 42.0 61.5, 42.8 61.7
+Q 43.9 62.1, 44.5 62.4
+Q 45.1 62.7, 45.6 63.4
+Q 46.0 64.1, 46.0 65.2
+Q 46.0 66.8, 44.9 67.7
+Q 43.9 68.5, 42.1 68.5
+Q 41.0 68.5, 40.2 68.3
+Q 39.5 68.1, 38.5 67.7
+L 39.0 66.4
+' fill='#000000'/><path d='M 63.9 31.3
+Q 63.9 28.5, 65.2 27.0
+Q 66.6 25.4, 69.2 25.4
+Q 71.8 25.4, 73.2 27.0
+Q 74.6 28.5, 74.6 31.3
+Q 74.6 34.2, 73.2 35.8
+Q 71.8 37.4, 69.2 37.4
+Q 66.6 37.4, 65.2 35.8
+Q 63.9 34.2, 63.9 31.3
+M 69.2 36.1
+Q 71.0 36.1, 71.9 34.9
+Q 72.9 33.7, 72.9 31.3
+Q 72.9 29.1, 71.9 27.9
+Q 71.0 26.7, 69.2 26.7
+Q 67.4 26.7, 66.5 27.9
+Q 65.5 29.0, 65.5 31.3
+Q 65.5 33.7, 66.5 34.9
+Q 67.4 36.1, 69.2 36.1
+' fill='#000000'/><path d='M 10.0 93.5
+Q 10.0 90.7, 11.4 89.2
+Q 12.8 87.6, 15.3 87.6
+Q 17.9 87.6, 19.3 89.2
+Q 20.7 90.7, 20.7 93.5
+Q 20.7 96.4, 19.3 98.0
+Q 17.9 99.6, 15.3 99.6
+Q 12.8 99.6, 11.4 98.0
+Q 10.0 96.4, 10.0 93.5
+M 15.3 98.3
+Q 17.1 98.3, 18.1 97.1
+Q 19.1 95.9, 19.1 93.5
+Q 19.1 91.3, 18.1 90.1
+Q 17.1 88.9, 15.3 88.9
+Q 13.6 88.9, 12.6 90.1
+Q 11.6 91.2, 11.6 93.5
+Q 11.6 95.9, 12.6 97.1
+Q 13.6 98.3, 15.3 98.3
+' fill='#000000'/><path d='M 70.8 83.5
+L 74.6 89.7
+Q 75.0 90.3, 75.6 91.4
+Q 76.2 92.5, 76.3 92.6
+L 76.3 83.5
+L 77.8 83.5
+L 77.8 95.2
+L 76.2 95.2
+L 72.1 88.4
+Q 71.6 87.6, 71.1 86.7
+Q 70.6 85.8, 70.5 85.5
+L 70.5 95.2
+L 69.0 95.2
+L 69.0 83.5
+L 70.8 83.5
+' fill='#000000'/><path d='M 68.8 96.3
+L 70.4 96.3
+L 70.4 101.3
+L 76.4 101.3
+L 76.4 96.3
+L 77.9 96.3
+L 77.9 108.0
+L 76.4 108.0
+L 76.4 102.6
+L 70.4 102.6
+L 70.4 108.0
+L 68.8 108.0
+L 68.8 96.3
+' fill='#000000'/></svg></div><figcaption>a sulfonamide</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='188px' height='141px' viewBox='6.2 -5.5 187.6 141.0'><ellipse cx='129.2' cy='65.2' rx='14.4' ry='14.4' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 12.2,65.0 L 57.8,38.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 83.7,38.7 L 116.6,57.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 137.1,51.4 L 163.0,6.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 121.1,79.0 L 95.5,123.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 141.9,72.3 L 187.8,98.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 63.6 31.3
+Q 63.6 27.5, 65.4 25.4
+Q 67.3 23.3, 70.8 23.3
+Q 74.2 23.3, 76.1 25.4
+Q 77.9 27.5, 77.9 31.3
+Q 77.9 35.1, 76.0 37.2
+Q 74.2 39.3, 70.8 39.3
+Q 67.3 39.3, 65.4 37.2
+Q 63.6 35.1, 63.6 31.3
+M 70.8 37.6
+Q 73.1 37.6, 74.4 36.0
+Q 75.7 34.4, 75.7 31.3
+Q 75.7 28.2, 74.4 26.7
+Q 73.1 25.1, 70.8 25.1
+Q 68.4 25.1, 67.1 26.6
+Q 65.8 28.2, 65.8 31.3
+Q 65.8 34.4, 67.1 36.0
+Q 68.4 37.6, 70.8 37.6
+' fill='#000000'/><path d='M 123.0 70.4
+Q 123.2 70.4, 123.9 70.7
+Q 124.6 71.0, 125.4 71.2
+Q 126.3 71.4, 127.0 71.4
+Q 128.5 71.4, 129.4 70.7
+Q 130.2 70.0, 130.2 68.7
+Q 130.2 67.9, 129.8 67.4
+Q 129.4 66.8, 128.7 66.5
+Q 128.1 66.3, 127.0 65.9
+Q 125.6 65.5, 124.7 65.1
+Q 123.9 64.7, 123.3 63.9
+Q 122.8 63.0, 122.8 61.6
+Q 122.8 59.7, 124.1 58.5
+Q 125.4 57.3, 128.1 57.3
+Q 129.9 57.3, 131.9 58.1
+L 131.4 59.8
+Q 129.5 59.0, 128.1 59.0
+Q 126.6 59.0, 125.8 59.7
+Q 124.9 60.3, 125.0 61.4
+Q 125.0 62.2, 125.4 62.7
+Q 125.8 63.2, 126.4 63.5
+Q 127.1 63.8, 128.1 64.1
+Q 129.5 64.6, 130.4 65.0
+Q 131.2 65.4, 131.8 66.3
+Q 132.4 67.2, 132.4 68.7
+Q 132.4 70.9, 131.0 72.1
+Q 129.5 73.2, 127.1 73.2
+Q 125.7 73.2, 124.7 72.9
+Q 123.7 72.6, 122.4 72.1
+L 123.0 70.4
+' fill='#000000'/><path d='M 134.0 57.2
+L 136.1 57.2
+L 136.1 59.1
+L 134.0 59.1
+L 134.0 57.2
+M 134.0 61.5
+L 136.1 61.5
+L 136.1 72.8
+L 134.0 72.8
+L 134.0 61.5
+' fill='#000000'/></svg></div><figcaption>a silyl ether</figcaption></figure>
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='192px' height='117px' viewBox='4.0 6.3 192.0 117.4'><ellipse cx='148.6' cy='64.9' rx='9.9' ry='9.9' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 165.6,94.3 L 154.7,75.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 154.7,54.4 L 165.5,35.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 140.2,64.9 L 102.4,64.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 102.4,64.9 L 79.3,104.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 94.4,64.9 L 75.3,98.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,104.9 L 33.1,104.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 33.1,104.9 L 10.0,64.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.1,98.0 L 18.0,64.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 10.0,64.9 L 33.1,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 33.1,24.9 L 79.3,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.1,31.8 L 75.3,31.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,24.9 L 102.4,64.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.5,102.9 L 79.3,104.9 L 77.0,104.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 35.4,104.9 L 33.1,104.9 L 31.9,102.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 11.2,66.9 L 10.0,64.9 L 11.2,62.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 31.9,26.9 L 33.1,24.9 L 35.4,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 77.0,24.9 L 79.3,24.9 L 80.5,26.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 165.7 105.0
+Q 165.7 101.8, 167.3 100.1
+Q 168.8 98.3, 171.7 98.3
+Q 174.6 98.3, 176.2 100.1
+Q 177.7 101.8, 177.7 105.0
+Q 177.7 108.1, 176.2 109.9
+Q 174.6 111.7, 171.7 111.7
+Q 168.8 111.7, 167.3 109.9
+Q 165.7 108.1, 165.7 105.0
+M 171.7 110.3
+Q 173.7 110.3, 174.8 108.9
+Q 175.9 107.6, 175.9 105.0
+Q 175.9 102.4, 174.8 101.1
+Q 173.7 99.8, 171.7 99.8
+Q 169.7 99.8, 168.6 101.1
+Q 167.6 102.4, 167.6 105.0
+Q 167.6 107.6, 168.6 108.9
+Q 169.7 110.3, 171.7 110.3
+' fill='#000000'/><path d='M 179.8 98.4
+L 181.5 98.4
+L 181.5 104.0
+L 188.2 104.0
+L 188.2 98.4
+L 190.0 98.4
+L 190.0 111.5
+L 188.2 111.5
+L 188.2 105.5
+L 181.5 105.5
+L 181.5 111.5
+L 179.8 111.5
+L 179.8 98.4
+' fill='#000000'/><path d='M 150.5 64.6
+Q 151.8 64.9, 152.4 65.7
+Q 153.1 66.5, 153.1 67.6
+Q 153.1 69.4, 151.9 70.4
+Q 150.7 71.4, 148.6 71.4
+L 144.2 71.4
+L 144.2 58.4
+L 148.0 58.4
+Q 150.3 58.4, 151.4 59.3
+Q 152.5 60.2, 152.5 61.8
+Q 152.5 63.8, 150.5 64.6
+M 145.9 59.8
+L 145.9 63.9
+L 148.0 63.9
+Q 149.3 63.9, 150.0 63.4
+Q 150.7 62.9, 150.7 61.8
+Q 150.7 59.8, 148.0 59.8
+L 145.9 59.8
+M 148.6 70.0
+Q 149.8 70.0, 150.5 69.4
+Q 151.2 68.7, 151.2 67.6
+Q 151.2 66.5, 150.5 66.0
+Q 149.7 65.4, 148.3 65.4
+L 145.9 65.4
+L 145.9 70.0
+L 148.6 70.0
+' fill='#000000'/><path d='M 165.7 24.9
+Q 165.7 21.8, 167.3 20.0
+Q 168.8 18.3, 171.7 18.3
+Q 174.6 18.3, 176.2 20.0
+Q 177.7 21.8, 177.7 24.9
+Q 177.7 28.1, 176.2 29.9
+Q 174.6 31.7, 171.7 31.7
+Q 168.8 31.7, 167.3 29.9
+Q 165.7 28.1, 165.7 24.9
+M 171.7 30.2
+Q 173.7 30.2, 174.8 28.9
+Q 175.9 27.5, 175.9 24.9
+Q 175.9 22.4, 174.8 21.1
+Q 173.7 19.7, 171.7 19.7
+Q 169.7 19.7, 168.6 21.0
+Q 167.6 22.3, 167.6 24.9
+Q 167.6 27.6, 168.6 28.9
+Q 169.7 30.2, 171.7 30.2
+' fill='#000000'/><path d='M 179.8 18.4
+L 181.5 18.4
+L 181.5 24.0
+L 188.2 24.0
+L 188.2 18.4
+L 190.0 18.4
+L 190.0 31.5
+L 188.2 31.5
+L 188.2 25.5
+L 181.5 25.5
+L 181.5 31.5
+L 179.8 31.5
+L 179.8 18.4
+' fill='#000000'/></svg></div><figcaption>phenylboronic acid</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='192px' height='81px' viewBox='4.0 27.8 192.0 81.0'><ellipse cx='72.8' cy='47.8' rx='15.6' ry='14.5' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 10.0,74.3 L 55.8,54.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 89.7,60.3 L 110.3,75.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 144.2,81.4 L 190.0,61.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 62.3 52.9
+Q 62.5 53.0, 63.2 53.3
+Q 64.0 53.6, 64.7 53.8
+Q 65.6 54.0, 66.4 54.0
+Q 67.8 54.0, 68.7 53.3
+Q 69.5 52.6, 69.5 51.3
+Q 69.5 50.4, 69.1 49.9
+Q 68.7 49.4, 68.0 49.1
+Q 67.4 48.8, 66.3 48.5
+Q 64.9 48.1, 64.0 47.7
+Q 63.2 47.3, 62.6 46.4
+Q 62.1 45.6, 62.1 44.2
+Q 62.1 42.2, 63.4 41.0
+Q 64.7 39.8, 67.4 39.8
+Q 69.2 39.8, 71.2 40.7
+L 70.7 42.4
+Q 68.8 41.6, 67.4 41.6
+Q 65.9 41.6, 65.1 42.2
+Q 64.2 42.9, 64.3 43.9
+Q 64.3 44.8, 64.7 45.3
+Q 65.1 45.8, 65.7 46.1
+Q 66.4 46.3, 67.4 46.7
+Q 68.8 47.1, 69.7 47.6
+Q 70.5 48.0, 71.1 48.9
+Q 71.7 49.8, 71.7 51.3
+Q 71.7 53.5, 70.3 54.6
+Q 68.8 55.8, 66.4 55.8
+Q 65.1 55.8, 64.0 55.5
+Q 63.0 55.2, 61.7 54.7
+L 62.3 52.9
+' fill='#000000'/><path d='M 73.8 49.7
+Q 73.8 46.9, 75.1 45.4
+Q 76.5 43.8, 79.1 43.8
+Q 81.5 43.8, 82.6 45.3
+Q 83.8 46.8, 83.8 49.6
+L 83.8 50.0
+L 75.9 50.0
+Q 75.9 51.9, 76.8 52.9
+Q 77.6 53.9, 79.2 53.9
+Q 80.1 53.9, 80.9 53.7
+Q 81.7 53.5, 82.7 53.0
+L 83.3 54.4
+Q 82.2 55.0, 81.2 55.3
+Q 80.2 55.5, 79.1 55.5
+Q 76.6 55.5, 75.2 54.0
+Q 73.8 52.4, 73.8 49.7
+M 79.1 45.5
+Q 77.8 45.5, 77.0 46.2
+Q 76.2 47.0, 76.0 48.4
+L 81.6 48.4
+Q 81.4 46.9, 80.8 46.2
+Q 80.2 45.5, 79.1 45.5
+' fill='#000000'/><path d='M 116.8 93.9
+Q 117.0 94.0, 117.7 94.3
+Q 118.5 94.6, 119.2 94.8
+Q 120.1 95.0, 120.9 95.0
+Q 122.3 95.0, 123.2 94.3
+Q 124.0 93.5, 124.0 92.3
+Q 124.0 91.4, 123.6 90.9
+Q 123.2 90.4, 122.5 90.1
+Q 121.9 89.8, 120.8 89.5
+Q 119.4 89.1, 118.5 88.7
+Q 117.7 88.3, 117.1 87.4
+Q 116.6 86.6, 116.6 85.2
+Q 116.6 83.2, 117.9 82.0
+Q 119.2 80.8, 121.9 80.8
+Q 123.7 80.8, 125.7 81.7
+L 125.2 83.4
+Q 123.3 82.6, 121.9 82.6
+Q 120.4 82.6, 119.6 83.2
+Q 118.7 83.8, 118.8 84.9
+Q 118.8 85.8, 119.2 86.3
+Q 119.6 86.8, 120.2 87.1
+Q 120.9 87.3, 121.9 87.7
+Q 123.3 88.1, 124.2 88.6
+Q 125.0 89.0, 125.6 89.9
+Q 126.2 90.8, 126.2 92.3
+Q 126.2 94.4, 124.8 95.6
+Q 123.3 96.8, 120.9 96.8
+Q 119.6 96.8, 118.5 96.4
+Q 117.5 96.2, 116.2 95.7
+L 116.8 93.9
+' fill='#000000'/><path d='M 128.3 90.7
+Q 128.3 87.9, 129.6 86.4
+Q 131.0 84.8, 133.6 84.8
+Q 136.0 84.8, 137.1 86.3
+Q 138.3 87.8, 138.3 90.6
+L 138.3 90.9
+L 130.4 90.9
+Q 130.4 92.9, 131.3 93.9
+Q 132.1 94.9, 133.7 94.9
+Q 134.6 94.9, 135.4 94.7
+Q 136.2 94.5, 137.2 94.0
+L 137.8 95.4
+Q 136.7 96.0, 135.7 96.3
+Q 134.7 96.5, 133.6 96.5
+Q 131.1 96.5, 129.7 95.0
+Q 128.3 93.4, 128.3 90.7
+M 133.6 86.5
+Q 132.3 86.5, 131.5 87.2
+Q 130.7 88.0, 130.5 89.4
+L 136.1 89.4
+Q 135.9 87.9, 135.3 87.2
+Q 134.7 86.5, 133.6 86.5
+' fill='#000000'/></svg></div><figcaption>dimethyl diselenide</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='184px' height='98px' viewBox='4.0 16.0 183.7 98.0'><ellipse cx='180.9' cy='65.0' rx='9.1' ry='9.1' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 176.4,65.0 L 138.2,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 138.2,65.0 L 116.8,102.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 116.8,102.0 L 74.1,102.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 113.1,95.6 L 77.8,95.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 74.1,102.0 L 52.7,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 52.7,65.0 L 10.0,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 52.7,65.0 L 74.1,28.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 60.1,65.0 L 77.8,34.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 74.1,28.0 L 116.8,28.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 116.8,28.0 L 138.2,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 113.1,34.4 L 130.8,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 117.9,100.1 L 116.8,102.0 L 114.7,102.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 76.2,102.0 L 74.1,102.0 L 73.0,100.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 73.0,29.9 L 74.1,28.0 L 76.2,28.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 114.7,28.0 L 116.8,28.0 L 117.9,29.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 180.1 58.9
+L 181.7 58.9
+L 181.7 71.1
+L 180.1 71.1
+L 180.1 58.9
+' fill='#000000'/></svg></div><figcaption>4-iodotoluene</figcaption></figure>
+  </div>
+  <p class="sub" style="margin-top:20px">H, B, C, N, O, F, Si, P, S, Cl, As, Se, Br, I. The six molecules above contain phosphorus, sulfur, silicon, boron, selenium and iodine; none would be valid input to a model trained only on H, C, N and O. All six evaluate in 7.5 seconds on a CPU.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">One family, several members</div>
+  <h2>Choosing a model is a chemical decision</h2>
+  <table>
+    <tr><th>Model</th><th>Elements</th><th>Charge and spin</th><th>Intended for</th></tr>
+    <tr><td><code>aimnet2</code></td><td class="num">14</td><td class="sub">closed shell</td><td>general organic chemistry, the default</td></tr>
+    <tr><td><code>aimnet2-2025</code></td><td class="num">14</td><td class="sub">closed shell</td><td>improved intermolecular interactions</td></tr>
+    <tr class="hi"><td><code>aimnet2-nse</code></td><td class="num">14</td><td class="sub">any charge, any multiplicity</td><td>radicals, ions, open-shell systems</td></tr>
+    <tr><td><code>aimnet2-pd</code></td><td class="num">14, with Pd</td><td class="sub">closed shell</td><td>palladium; not a gas-phase model</td></tr>
+    <tr><td><code>aimnet2-rxn</code></td><td class="num">H C N O</td><td class="sub">neutral only</td><td>reaction paths at scale</td></tr>
+  </table>
+  <div class="callout" style="margin-top:24px">
+    <div class="k">Domain of applicability</div>
+    <p style="font-size:19px">Molecular systems only, not bulk metals or surfaces. No elements beyond those listed. And, with the single exception of <code>aimnet2-pd</code>, <strong>the gas phase</strong>: no solvent is present. This limitation recurs three times today, and twice you will encounter it yourself.</p>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide divider">
+  <div class="clock">notebook 1 &nbsp;·&nbsp; 10 minutes</div>
+  <h1>Energy, forces and charge</h1>
+  <p class="note">The quantities the model returns, and what each of them means.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">Definitions</div>
+  <h2>Three quantities</h2>
+  <div class="cols3">
+    <div class="callout"><div class="k">Potential energy</div>
+      <p class="sub" style="font-size:18px">A total electronic energy, measured relative to separated atoms. Reported in eV; 1 eV = 23.06 kcal/mol. Its absolute value carries no information. <strong>Only differences are meaningful.</strong></p></div>
+    <div class="callout"><div class="k">Force</div>
+      <p class="sub" style="font-size:18px"><strong>F</strong><sub>i</sub> = &minus;&part;<em>E</em>/&part;<strong>R</strong><sub>i</sub>, the direction in which an atom would move to lower the energy. In eV/&#197;. A structure with zero forces is a stationary point.</p></div>
+    <div class="callout"><div class="k">Partial atomic charge</div>
+      <p class="sub" style="font-size:18px">A division of the total electron density among the atoms, in units of <em>e</em>. Not a physical observable, but a standard descriptor of where electron density sits. Must sum to the total charge.</p></div>
+  </div>
+  <p class="sub" style="margin-top:26px"><strong>Useful reference scale.</strong> Thermal energy at room temperature is 0.59 kcal/mol. A hydrogen bond is about 5 kcal/mol. A carbon&ndash;carbon single bond is about 85 kcal/mol.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">Changing one input</div>
+  <h2>Total charge is an input, not a correction</h2>
+  <div class="cols" style="align-items:center">
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='160px' height='149px' viewBox='32.2 -3.2 159.6 148.9'><ellipse cx='171.3' cy='125.7' rx='20.4' ry='15.5' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 38.2,125.6 L 101.1,89.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 106.6,92.4 L 106.6,31.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 95.7,92.4 L 95.7,31.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 101.1,89.3 L 150.6,117.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 98.0,91.1 L 101.1,89.3 L 103.6,90.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 94.0 16.7
+Q 94.0 13.0, 95.8 10.9
+Q 97.7 8.8, 101.1 8.8
+Q 104.6 8.8, 106.4 10.9
+Q 108.3 13.0, 108.3 16.7
+Q 108.3 20.5, 106.4 22.6
+Q 104.5 24.8, 101.1 24.8
+Q 97.7 24.8, 95.8 22.6
+Q 94.0 20.5, 94.0 16.7
+M 101.1 23.0
+Q 103.5 23.0, 104.8 21.4
+Q 106.1 19.8, 106.1 16.7
+Q 106.1 13.6, 104.8 12.1
+Q 103.5 10.5, 101.1 10.5
+Q 98.7 10.5, 97.5 12.1
+Q 96.2 13.6, 96.2 16.7
+Q 96.2 19.8, 97.5 21.4
+Q 98.7 23.0, 101.1 23.0
+' fill='#000000'/><path d='M 156.9 125.6
+Q 156.9 121.9, 158.7 119.8
+Q 160.6 117.7, 164.0 117.7
+Q 167.5 117.7, 169.3 119.8
+Q 171.2 121.9, 171.2 125.6
+Q 171.2 129.4, 169.3 131.6
+Q 167.4 133.7, 164.0 133.7
+Q 160.6 133.7, 158.7 131.6
+Q 156.9 129.5, 156.9 125.6
+M 164.0 132.0
+Q 166.4 132.0, 167.7 130.4
+Q 169.0 128.8, 169.0 125.6
+Q 169.0 122.6, 167.7 121.0
+Q 166.4 119.5, 164.0 119.5
+Q 161.6 119.5, 160.4 121.0
+Q 159.1 122.6, 159.1 125.6
+Q 159.1 128.8, 160.4 130.4
+Q 161.6 132.0, 164.0 132.0
+' fill='#000000'/><path d='M 173.6 117.9
+L 175.7 117.9
+L 175.7 124.5
+L 183.7 124.5
+L 183.7 117.9
+L 185.8 117.9
+L 185.8 133.5
+L 183.7 133.5
+L 183.7 126.3
+L 175.7 126.3
+L 175.7 133.5
+L 173.6 133.5
+L 173.6 117.9
+' fill='#000000'/></svg></div><figcaption>acetic acid &nbsp;·&nbsp; <code>charge = 0</code></figcaption></figure>
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='148px' height='145px' viewBox='38.7 2.5 148.1 145.0'><ellipse cx='105.4' cy='22.4' rx='14.9' ry='14.9' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><ellipse cx='169.8' cy='127.6' rx='15.4' ry='14.9' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 44.7,127.4 L 105.4,92.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.6,95.4 L 110.6,36.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 100.1,95.4 L 100.1,36.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.4,92.4 L 152.9,119.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 102.4,94.1 L 105.4,92.4 L 107.8,93.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 98.2 22.4
+Q 98.2 18.6, 100.1 16.5
+Q 101.9 14.5, 105.4 14.5
+Q 108.8 14.5, 110.7 16.5
+Q 112.5 18.6, 112.5 22.4
+Q 112.5 26.2, 110.7 28.3
+Q 108.8 30.4, 105.4 30.4
+Q 102.0 30.4, 100.1 28.3
+Q 98.2 26.2, 98.2 22.4
+M 105.4 28.7
+Q 107.8 28.7, 109.0 27.1
+Q 110.3 25.5, 110.3 22.4
+Q 110.3 19.3, 109.0 17.8
+Q 107.8 16.2, 105.4 16.2
+Q 103.0 16.2, 101.7 17.8
+Q 100.4 19.3, 100.4 22.4
+Q 100.4 25.5, 101.7 27.1
+Q 103.0 28.7, 105.4 28.7
+' fill='#000000'/><path d='M 158.9 127.5
+Q 158.9 123.7, 160.8 121.6
+Q 162.6 119.6, 166.1 119.6
+Q 169.5 119.6, 171.4 121.6
+Q 173.2 123.7, 173.2 127.5
+Q 173.2 131.3, 171.4 133.4
+Q 169.5 135.5, 166.1 135.5
+Q 162.6 135.5, 160.8 133.4
+Q 158.9 131.3, 158.9 127.5
+M 166.1 133.8
+Q 168.4 133.8, 169.7 132.2
+Q 171.0 130.6, 171.0 127.5
+Q 171.0 124.4, 169.7 122.9
+Q 168.4 121.3, 166.1 121.3
+Q 163.7 121.3, 162.4 122.9
+Q 161.1 124.4, 161.1 127.5
+Q 161.1 130.6, 162.4 132.2
+Q 163.7 133.8, 166.1 133.8
+' fill='#000000'/><path d='M 175.4 122.1
+L 180.8 122.1
+L 180.8 123.3
+L 175.4 123.3
+L 175.4 122.1
+' fill='#000000'/></svg></div><figcaption>acetate &nbsp;·&nbsp; <code>charge = &minus;1</code></figcaption></figure>
+  </div>
+  <table style="margin-top:14px">
+    <tr><th>Species</th><th class="num asis">O charges / e</th><th class="num asis">C&ndash;O lengths / &#197;</th><th class="num asis">|&mu;| / e&#8239;&#197;</th></tr>
+    <tr><td>acetic acid</td><td class="num">&minus;0.435 &nbsp; &minus;0.456</td><td class="num">1.201 &nbsp; 1.352</td><td class="num">0.35</td></tr>
+    <tr class="hi"><td>acetate</td><td class="num">&minus;0.676 &nbsp; &minus;0.673</td><td class="num">1.251 &nbsp; 1.250</td><td class="num">1.46</td></tr>
+  </table>
+  <p class="sub" style="margin-top:16px">In the acid the two oxygens differ, and the two C&ndash;O bonds differ by 0.15 &#197;. In the anion both charges and both bond lengths become equal. The delocalisation is reproduced; it was not imposed.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow">The gas-phase limitation, demonstrated</div>
+  <h2>Glycine has no zwitterion in the gas phase</h2>
+  <div class="rxnrow">
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='220px' height='134px' viewBox='19.8 7.9 219.9 134.2'><ellipse cx='48.6' cy='94.5' rx='32.2' ry='16.7' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 67.1,97.1 L 110.2,122.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.2,122.0 L 164.6,90.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 169.3,93.3 L 169.3,41.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 159.8,93.3 L 159.8,41.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 164.6,90.6 L 206.4,114.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 108.0,120.7 L 110.2,122.0 L 112.9,120.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 161.8,92.2 L 164.6,90.6 L 166.6,91.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 25.8 82.8
+L 27.9 82.8
+L 27.9 89.4
+L 35.9 89.4
+L 35.9 82.8
+L 38.0 82.8
+L 38.0 98.4
+L 35.9 98.4
+L 35.9 91.2
+L 27.9 91.2
+L 27.9 98.4
+L 25.8 98.4
+L 25.8 82.8
+' fill='#000000'/><path d='M 45.9 100.7
+Q 46.9 101.0, 47.4 101.7
+Q 47.9 102.3, 47.9 103.3
+Q 47.9 104.2, 47.4 104.9
+Q 47.0 105.6, 46.2 105.9
+Q 45.4 106.3, 44.4 106.3
+Q 43.3 106.3, 42.4 105.9
+Q 41.6 105.5, 41.0 104.8
+L 41.8 103.9
+Q 42.4 104.6, 43.0 104.9
+Q 43.5 105.1, 44.4 105.1
+Q 45.3 105.1, 45.9 104.6
+Q 46.4 104.1, 46.4 103.3
+Q 46.4 102.3, 45.8 101.8
+Q 45.2 101.3, 44.0 101.3
+L 43.2 101.3
+L 43.2 100.3
+L 43.9 100.3
+Q 45.0 100.3, 45.6 99.8
+Q 46.2 99.3, 46.2 98.4
+Q 46.2 97.7, 45.7 97.3
+Q 45.2 96.9, 44.4 96.9
+Q 43.5 96.9, 43.0 97.2
+Q 42.5 97.5, 42.1 98.3
+L 41.1 97.8
+Q 41.4 96.9, 42.3 96.3
+Q 43.2 95.8, 44.4 95.8
+Q 45.9 95.8, 46.8 96.5
+Q 47.7 97.2, 47.7 98.4
+Q 47.7 99.2, 47.2 99.8
+Q 46.8 100.4, 45.9 100.7
+' fill='#000000'/><path d='M 52.3 82.8
+L 57.4 91.0
+Q 57.9 91.9, 58.7 93.3
+Q 59.6 94.8, 59.6 94.9
+L 59.6 82.8
+L 61.7 82.8
+L 61.7 98.4
+L 59.5 98.4
+L 54.1 89.4
+Q 53.4 88.3, 52.7 87.1
+Q 52.1 85.9, 51.9 85.5
+L 51.9 98.4
+L 49.9 98.4
+L 49.9 82.8
+L 52.3 82.8
+' fill='#000000'/><path d='M 64.6 85.6
+L 67.4 85.6
+L 67.4 82.7
+L 68.6 82.7
+L 68.6 85.6
+L 71.4 85.6
+L 71.4 86.6
+L 68.6 86.6
+L 68.6 89.6
+L 67.4 89.6
+L 67.4 86.6
+L 64.6 86.6
+L 64.6 85.6
+' fill='#000000'/><path d='M 157.4 27.8
+Q 157.4 24.1, 159.3 22.0
+Q 161.1 19.9, 164.6 19.9
+Q 168.0 19.9, 169.9 22.0
+Q 171.7 24.1, 171.7 27.8
+Q 171.7 31.6, 169.8 33.8
+Q 168.0 35.9, 164.6 35.9
+Q 161.1 35.9, 159.3 33.8
+Q 157.4 31.6, 157.4 27.8
+M 164.6 34.1
+Q 166.9 34.1, 168.2 32.5
+Q 169.5 30.9, 169.5 27.8
+Q 169.5 24.8, 168.2 23.2
+Q 166.9 21.7, 164.6 21.7
+Q 162.2 21.7, 160.9 23.2
+Q 159.6 24.7, 159.6 27.8
+Q 159.6 31.0, 160.9 32.5
+Q 162.2 34.1, 164.6 34.1
+' fill='#000000'/><path d='M 211.8 122.0
+Q 211.8 118.3, 213.7 116.2
+Q 215.5 114.1, 219.0 114.1
+Q 222.4 114.1, 224.3 116.2
+Q 226.1 118.3, 226.1 122.0
+Q 226.1 125.8, 224.2 128.0
+Q 222.4 130.1, 219.0 130.1
+Q 215.5 130.1, 213.7 128.0
+Q 211.8 125.8, 211.8 122.0
+M 219.0 128.3
+Q 221.3 128.3, 222.6 126.8
+Q 223.9 125.2, 223.9 122.0
+Q 223.9 119.0, 222.6 117.4
+Q 221.3 115.9, 219.0 115.9
+Q 216.6 115.9, 215.3 117.4
+Q 214.0 119.0, 214.0 122.0
+Q 214.0 125.2, 215.3 126.8
+Q 216.6 128.3, 219.0 128.3
+' fill='#000000'/><path d='M 228.3 116.7
+L 233.7 116.7
+L 233.7 117.8
+L 228.3 117.8
+L 228.3 116.7
+' fill='#000000'/></svg></div><figcaption>zwitterion, as it exists in water</figcaption></figure>
+    <div class="arrow"><span>optimise</span></div>
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='224px' height='132px' viewBox='10.0 6.2 224.0 132.5'><ellipse cx='213.6' cy='118.7' rx='20.4' ry='13.2' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 57.3,94.2 L 99.5,118.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 99.5,118.5 L 152.9,87.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 157.5,90.4 L 157.5,39.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 148.2,90.4 L 148.2,39.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 152.9,87.7 L 193.8,111.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 97.3,117.3 L 99.5,118.5 L 102.1,117.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 150.2,89.3 L 152.9,87.7 L 154.9,88.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 16.0 79.9
+L 18.1 79.9
+L 18.1 86.5
+L 26.1 86.5
+L 26.1 79.9
+L 28.2 79.9
+L 28.2 95.5
+L 26.1 95.5
+L 26.1 88.3
+L 18.1 88.3
+L 18.1 95.5
+L 16.0 95.5
+L 16.0 79.9
+' fill='#000000'/><path d='M 31.2 95.0
+Q 31.6 94.0, 32.5 93.4
+Q 33.4 92.9, 34.7 92.9
+Q 36.2 92.9, 37.1 93.7
+Q 38.0 94.6, 38.0 96.1
+Q 38.0 97.6, 36.8 99.0
+Q 35.7 100.4, 33.4 102.1
+L 38.1 102.1
+L 38.1 103.3
+L 31.2 103.3
+L 31.2 102.3
+Q 33.1 101.0, 34.3 99.9
+Q 35.4 98.9, 36.0 98.0
+Q 36.5 97.1, 36.5 96.1
+Q 36.5 95.2, 36.0 94.6
+Q 35.5 94.1, 34.7 94.1
+Q 33.8 94.1, 33.3 94.4
+Q 32.7 94.7, 32.3 95.5
+L 31.2 95.0
+' fill='#000000'/><path d='M 42.6 79.9
+L 47.7 88.2
+Q 48.2 89.0, 49.0 90.5
+Q 49.9 91.9, 49.9 92.0
+L 49.9 79.9
+L 52.0 79.9
+L 52.0 95.5
+L 49.8 95.5
+L 44.4 86.5
+Q 43.7 85.4, 43.0 84.2
+Q 42.4 83.0, 42.2 82.6
+L 42.2 95.5
+L 40.2 95.5
+L 40.2 79.9
+L 42.6 79.9
+' fill='#000000'/><path d='M 145.7 26.1
+Q 145.7 22.4, 147.6 20.3
+Q 149.4 18.2, 152.9 18.2
+Q 156.3 18.2, 158.2 20.3
+Q 160.0 22.4, 160.0 26.1
+Q 160.0 29.9, 158.1 32.0
+Q 156.3 34.2, 152.9 34.2
+Q 149.4 34.2, 147.6 32.0
+Q 145.7 29.9, 145.7 26.1
+M 152.9 32.4
+Q 155.2 32.4, 156.5 30.8
+Q 157.8 29.2, 157.8 26.1
+Q 157.8 23.0, 156.5 21.5
+Q 155.2 19.9, 152.9 19.9
+Q 150.5 19.9, 149.2 21.5
+Q 147.9 23.0, 147.9 26.1
+Q 147.9 29.2, 149.2 30.8
+Q 150.5 32.4, 152.9 32.4
+' fill='#000000'/><path d='M 199.1 118.6
+Q 199.1 114.8, 200.9 112.8
+Q 202.8 110.7, 206.3 110.7
+Q 209.7 110.7, 211.6 112.8
+Q 213.4 114.8, 213.4 118.6
+Q 213.4 122.4, 211.5 124.5
+Q 209.7 126.7, 206.3 126.7
+Q 202.8 126.7, 200.9 124.5
+Q 199.1 122.4, 199.1 118.6
+M 206.3 124.9
+Q 208.6 124.9, 209.9 123.3
+Q 211.2 121.7, 211.2 118.6
+Q 211.2 115.5, 209.9 114.0
+Q 208.6 112.4, 206.3 112.4
+Q 203.9 112.4, 202.6 114.0
+Q 201.3 115.5, 201.3 118.6
+Q 201.3 121.7, 202.6 123.3
+Q 203.9 124.9, 206.3 124.9
+' fill='#000000'/><path d='M 215.8 110.8
+L 217.9 110.8
+L 217.9 117.5
+L 225.9 117.5
+L 225.9 110.8
+L 228.0 110.8
+L 228.0 126.4
+L 225.9 126.4
+L 225.9 119.2
+L 217.9 119.2
+L 217.9 126.4
+L 215.8 126.4
+L 215.8 110.8
+' fill='#000000'/></svg></div><figcaption>the proton returns to oxygen</figcaption></figure>
+  </div>
+  <div class="cols" style="margin-top:14px;align-items:center">
+    <table>
+      <tr><th></th><th class="num asis">N&ndash;H / &#197;</th><th class="num asis">O&ndash;H / &#197;</th></tr>
+      <tr><td>starting structure</td><td class="num">1.019</td><td class="num">1.702</td></tr>
+      <tr class="hi"><td>after optimisation</td><td class="num">1.007</td><td class="num">0.979</td></tr>
+    </table>
+    <p class="sub">Solvent molecules stabilise the separated charges of a zwitterion. In vacuum nothing does, so the proton transfers back and the zwitterion is not a minimum. This is the correct result for an isolated molecule, and a reminder that most chemistry of interest occurs in solution.</p>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide divider">
+  <div class="clock">notebook 2 &nbsp;·&nbsp; 8 minutes</div>
+  <h1>Geometry optimisation</h1>
+  <p class="note">Finding a stable structure, and understanding what the procedure cannot do.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">Definitions</div>
+  <h2>Moving downhill</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="callout"><div class="k">Local minimum</div>
+        <p style="font-size:19px">A point at which all forces vanish and the energy rises in every direction. Physically, a stable structure.</p></div>
+      <div class="callout"><div class="k">Geometry optimisation</div>
+        <p style="font-size:19px">Iteratively moving atoms along the forces until the forces vanish. Each step costs one energy and force evaluation.</p></div>
+    </div>
+    <div class="stack">
+      <div class="callout"><div class="k">Convergence criterion</div>
+        <p style="font-size:19px">Stop when the largest force falls below a threshold, <code>fmax</code>. We use <strong>0.02 eV/&#197;</strong> throughout.</p></div>
+      <table style="font-size:18px">
+        <tr><th>Molecule</th><th class="num">Atoms</th><th class="num">Steps</th><th class="num">Time</th></tr>
+        <tr><td>ethanol</td><td class="num">9</td><td class="num">17</td><td class="num">0.4 s</td></tr>
+        <tr><td>caffeine</td><td class="num">24</td><td class="num">21</td><td class="num">0.4 s</td></tr>
+        <tr><td>ibuprofen</td><td class="num">33</td><td class="num">26</td><td class="num">0.6 s</td></tr>
+      </table>
+      <p class="sub" style="font-size:16px">On a CPU. The same optimisations with a hybrid density functional would take minutes to hours each.</p>
+    </div>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow">The limitation that motivates the first exercise</div>
+  <h2>An optimisation finds the nearest minimum, not the best one</h2>
+  <div class="cols" style="align-items:center;gap:36px">
+    <div class="molgrid" style="grid-template-columns:1fr 1fr;gap:0 10px">
+      <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg' width='168' height='214' viewBox='0 0 168 214'><line x1='78.0' y1='124.0' x2='78.0' y2='150.0' stroke='#C41230' stroke-width='2.2'/><text x='78.0' y='163.0' fill='#C41230' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>CH3</text><line x1='117.8' y1='55.0' x2='140.4' y2='42.0' stroke='#000000' stroke-width='2.2'/><text x='151.6' y='35.5' fill='#000000' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>H</text><line x1='38.2' y1='55.0' x2='15.6' y2='42.0' stroke='#000000' stroke-width='2.2'/><text x='4.4' y='35.5' fill='#000000' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>H</text><circle cx='78' cy='78' r='46' fill='#fff' stroke='#000000' stroke-width='2.2'/><line x1='78' y1='78' x2='78.0' y2='32.0' stroke='#C41230' stroke-width='2.6'/><text x='78.0' y='19.0' fill='#C41230' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>CH3</text><line x1='78' y1='78' x2='38.2' y2='101.0' stroke='#000000' stroke-width='2.6'/><text x='26.9' y='107.5' fill='#000000' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>H</text><line x1='78' y1='78' x2='117.8' y2='101.0' stroke='#000000' stroke-width='2.6'/><text x='129.1' y='107.5' fill='#000000' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>H</text><text x='78' y='190' fill='#000000' font-size='16' font-weight='700' font-family='Open Sans,Helvetica,sans-serif' text-anchor='middle'>anti</text><text x='78' y='207' fill='#6D6E71' font-size='13' font-family='Source Code Pro,monospace' text-anchor='middle'>CH3-C-C-CH3 = 180&#176;</text></svg></div></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg' width='168' height='214' viewBox='0 0 168 214'><line x1='117.8' y1='55.0' x2='140.4' y2='42.0' stroke='#C41230' stroke-width='2.2'/><text x='151.6' y='35.5' fill='#C41230' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>CH3</text><line x1='38.2' y1='55.0' x2='15.6' y2='42.0' stroke='#000000' stroke-width='2.2'/><text x='4.4' y='35.5' fill='#000000' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>H</text><line x1='78.0' y1='124.0' x2='78.0' y2='150.0' stroke='#000000' stroke-width='2.2'/><text x='78.0' y='163.0' fill='#000000' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>H</text><circle cx='78' cy='78' r='46' fill='#fff' stroke='#000000' stroke-width='2.2'/><line x1='78' y1='78' x2='78.0' y2='32.0' stroke='#C41230' stroke-width='2.6'/><text x='78.0' y='19.0' fill='#C41230' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>CH3</text><line x1='78' y1='78' x2='38.2' y2='101.0' stroke='#000000' stroke-width='2.6'/><text x='26.9' y='107.5' fill='#000000' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>H</text><line x1='78' y1='78' x2='117.8' y2='101.0' stroke='#000000' stroke-width='2.6'/><text x='129.1' y='107.5' fill='#000000' font-size='17' font-family='Open Sans,Helvetica,sans-serif' font-weight='600' text-anchor='middle' dominant-baseline='central'>H</text><text x='78' y='190' fill='#000000' font-size='16' font-weight='700' font-family='Open Sans,Helvetica,sans-serif' text-anchor='middle'>gauche</text><text x='78' y='207' fill='#6D6E71' font-size='13' font-family='Source Code Pro,monospace' text-anchor='middle'>CH3-C-C-CH3 = 60&#176;</text></svg></div></figure>
+    </div>
+    <div class="stack">
+      <table style="font-size:19px">
+        <tr><th class="num">Start</th><th class="num">Final</th><th class="num">Relative energy</th></tr>
+        <tr><td class="num">0&deg;</td><td class="num">66&deg;</td><td class="num">0.31</td></tr>
+        <tr><td class="num">60&deg;</td><td class="num">67&deg;</td><td class="num">0.31</td></tr>
+        <tr><td class="num">90&deg;</td><td class="num">66&deg;</td><td class="num">0.31</td></tr>
+        <tr class="hi"><td class="num">180&deg;</td><td class="num">&minus;179&deg;</td><td class="num">0.00</td></tr>
+      </table>
+      <p class="sub">Butane, C&ndash;C&ndash;C&ndash;C torsion, energies in kcal/mol.</p>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:20px">Each optimisation reached whichever minimum lay nearest its starting point. Moving between them requires going <em>uphill</em>, and the forces always point downhill. <strong>Optimising one structure therefore describes one minimum.</strong></p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act divider">
+  <div class="clock">notebook 3 &nbsp;·&nbsp; 13 minutes</div>
+  <span class="chip" style="align-self:flex-start;margin-bottom:18px">Exercise 1</span>
+  <h1>Conformational analysis</h1>
+  <p class="note">Finding all the accessible minima, and determining which of them are populated.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act">
+  <div class="eyebrow">Exercise 1 &middot; definitions</div>
+  <h2 class="plain">Conformers and populations</h2>
+  <div class="cols3">
+    <div class="callout"><div class="k">Conformer</div>
+      <p class="sub" style="font-size:18px">One of several structures of the same molecule differing only by rotation about single bonds. Distinct minima on the surface; not isomers, since no bonds differ.</p></div>
+    <div class="callout"><div class="k">Conformational ensemble</div>
+      <p class="sub" style="font-size:18px">The full set of accessible conformers with their relative energies. At room temperature a flexible molecule is a population, not a structure.</p></div>
+    <div class="callout"><div class="k">Boltzmann distribution</div>
+      <p class="sub" style="font-size:18px"><em>p<sub>i</sub></em> &prop; exp(&minus;<em>E<sub>i</sub></em>/<em>kT</em>), with <em>kT</em> = 0.59 kcal/mol at 298 K. One kcal/mol above the minimum is five times less populated; three kcal/mol is 150 times less.</p></div>
+  </div>
+  <div class="rule" style="margin:26px 0 20px"></div>
+  <p class="sub"><strong>Procedure.</strong> Generate many trial structures with different torsions &rarr; optimise each &rarr; remove duplicates &rarr; apply the Boltzmann distribution. Duplicates are identified by comparing sorted interatomic distances, which are unchanged by translation and rotation.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act">
+  <div class="eyebrow">Exercise 1 &middot; systems</div>
+  <h2 class="plain">Eight systems, assigned by seat</h2>
+  <div class="pairgrid" style="grid-template-columns:repeat(4,1fr);gap:12px 14px">
+    <div class="pairbox"><span class="seat">seat 0</span><span class="nm">butane<br><span style="color:#6D6E71">anti versus gauche</span></span><span class="two"><svg xmlns='http://www.w3.org/2000/svg'
+width='169px' height='60px' viewBox='2.8 25.1 169.0 59.8'><path d='M 8.8,60.4 L 63.5,37.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 63.5,37.1 L 111.0,72.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 111.0,72.9 L 165.8,49.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 60.7,38.3 L 63.5,37.1 L 65.9,38.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 108.6,71.1 L 111.0,72.9 L 113.8,71.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /></svg></span></div>
+    <div class="pairbox hi"><span class="seat">seat 1</span><span class="nm">methylcyclohexane<br><span style="color:#6D6E71">axial versus equatorial</span></span><span class="two"><svg xmlns='http://www.w3.org/2000/svg'
+width='169px' height='115px' viewBox='2.8 -2.3 169.0 114.6'><path d='M 165.8,55.0 L 113.4,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 113.4,55.0 L 87.2,100.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 87.2,100.3 L 34.9,100.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 34.9,100.3 L 8.8,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 8.8,55.0 L 34.9,9.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 34.9,9.7 L 87.3,9.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 87.3,9.7 L 113.4,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 88.6,98.1 L 87.2,100.3 L 84.6,100.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 37.5,100.3 L 34.9,100.3 L 33.6,98.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 10.1,57.3 L 8.8,55.0 L 10.1,52.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 33.6,11.9 L 34.9,9.7 L 37.5,9.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 84.6,9.7 L 87.3,9.7 L 88.6,11.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /></svg></span></div>
+    <div class="pairbox"><span class="seat">seat 2</span><span class="nm">ethylene glycol<br><span style="color:#6D6E71">internal hydrogen bond</span></span><span class="two"><svg xmlns='http://www.w3.org/2000/svg'
+width='169px' height='51px' viewBox='2.7 29.3 169.1 51.4'><path d='M 137.9,55.0 L 105.8,41.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.8,41.3 L 69.4,68.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 69.4,68.7 L 37.3,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 107.4,42.0 L 105.8,41.3 L 104.0,42.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 71.2,67.3 L 69.4,68.7 L 67.8,68.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 141.8 59.2
+Q 141.8 56.1, 143.3 54.4
+Q 144.9 52.6, 147.7 52.6
+Q 150.6 52.6, 152.1 54.4
+Q 153.6 56.1, 153.6 59.2
+Q 153.6 62.3, 152.1 64.1
+Q 150.5 65.9, 147.7 65.9
+Q 144.9 65.9, 143.3 64.1
+Q 141.8 62.3, 141.8 59.2
+M 147.7 64.4
+Q 149.7 64.4, 150.7 63.1
+Q 151.8 61.8, 151.8 59.2
+Q 151.8 56.6, 150.7 55.4
+Q 149.7 54.1, 147.7 54.1
+Q 145.7 54.1, 144.7 55.4
+Q 143.6 56.6, 143.6 59.2
+Q 143.6 61.8, 144.7 63.1
+Q 145.7 64.4, 147.7 64.4
+' fill='#000000'/><path d='M 155.7 52.8
+L 157.4 52.8
+L 157.4 58.3
+L 164.0 58.3
+L 164.0 52.8
+L 165.8 52.8
+L 165.8 65.7
+L 164.0 65.7
+L 164.0 59.7
+L 157.4 59.7
+L 157.4 65.7
+L 155.7 65.7
+L 155.7 52.8
+' fill='#000000'/><path d='M 8.7 44.5
+L 10.5 44.5
+L 10.5 50.0
+L 17.1 50.0
+L 17.1 44.5
+L 18.8 44.5
+L 18.8 57.4
+L 17.1 57.4
+L 17.1 51.4
+L 10.5 51.4
+L 10.5 57.4
+L 8.7 57.4
+L 8.7 44.5
+' fill='#000000'/><path d='M 21.5 50.9
+Q 21.5 47.8, 23.0 46.1
+Q 24.6 44.3, 27.4 44.3
+Q 30.3 44.3, 31.8 46.1
+Q 33.3 47.8, 33.3 50.9
+Q 33.3 54.0, 31.8 55.8
+Q 30.2 57.6, 27.4 57.6
+Q 24.6 57.6, 23.0 55.8
+Q 21.5 54.0, 21.5 50.9
+M 27.4 56.1
+Q 29.4 56.1, 30.4 54.8
+Q 31.5 53.5, 31.5 50.9
+Q 31.5 48.4, 30.4 47.1
+Q 29.4 45.8, 27.4 45.8
+Q 25.5 45.8, 24.4 47.1
+Q 23.3 48.3, 23.3 50.9
+Q 23.3 53.5, 24.4 54.8
+Q 25.5 56.1, 27.4 56.1
+' fill='#000000'/></svg></span></div>
+    <div class="pairbox"><span class="seat">seat 3</span><span class="nm">glycine<br><span style="color:#6D6E71">accessible conformers</span></span><span class="two"><svg xmlns='http://www.w3.org/2000/svg'
+width='169px' height='103px' viewBox='2.7 3.3 169.1 103.4'><path d='M 41.6,70.9 L 71.4,88.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 71.4,88.2 L 109.8,66.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 113.1,67.9 L 113.1,32.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 106.5,67.9 L 106.5,32.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 109.8,66.0 L 138.6,82.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 69.9,87.3 L 71.4,88.2 L 73.3,87.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 107.9,67.1 L 109.8,66.0 L 111.2,66.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 8.7 59.7
+L 10.5 59.7
+L 10.5 65.0
+L 16.9 65.0
+L 16.9 59.7
+L 18.6 59.7
+L 18.6 72.3
+L 16.9 72.3
+L 16.9 66.5
+L 10.5 66.5
+L 10.5 72.3
+L 8.7 72.3
+L 8.7 59.7
+' fill='#000000'/><path d='M 21.0 71.8
+Q 21.3 71.0, 22.1 70.6
+Q 22.8 70.2, 23.8 70.2
+Q 25.1 70.2, 25.8 70.8
+Q 26.5 71.5, 26.5 72.7
+Q 26.5 74.0, 25.5 75.1
+Q 24.6 76.3, 22.8 77.6
+L 26.6 77.6
+L 26.6 78.5
+L 21.0 78.5
+L 21.0 77.8
+Q 22.6 76.7, 23.5 75.8
+Q 24.4 75.0, 24.8 74.3
+Q 25.3 73.5, 25.3 72.8
+Q 25.3 72.0, 24.9 71.5
+Q 24.5 71.1, 23.8 71.1
+Q 23.1 71.1, 22.7 71.4
+Q 22.2 71.6, 21.9 72.2
+L 21.0 71.8
+' fill='#000000'/><path d='M 30.2 59.7
+L 34.3 66.4
+Q 34.7 67.0, 35.4 68.2
+Q 36.0 69.4, 36.1 69.5
+L 36.1 59.7
+L 37.8 59.7
+L 37.8 72.3
+L 36.0 72.3
+L 31.6 65.0
+Q 31.1 64.1, 30.5 63.2
+Q 30.0 62.2, 29.9 61.9
+L 29.9 72.3
+L 28.2 72.3
+L 28.2 59.7
+L 30.2 59.7
+' fill='#000000'/><path d='M 104.0 21.7
+Q 104.0 18.7, 105.5 17.0
+Q 107.0 15.3, 109.8 15.3
+Q 112.6 15.3, 114.1 17.0
+Q 115.6 18.7, 115.6 21.7
+Q 115.6 24.7, 114.1 26.5
+Q 112.5 28.2, 109.8 28.2
+Q 107.0 28.2, 105.5 26.5
+Q 104.0 24.7, 104.0 21.7
+M 109.8 26.8
+Q 111.7 26.8, 112.7 25.5
+Q 113.8 24.2, 113.8 21.7
+Q 113.8 19.2, 112.7 18.0
+Q 111.7 16.7, 109.8 16.7
+Q 107.9 16.7, 106.8 18.0
+Q 105.8 19.2, 105.8 21.7
+Q 105.8 24.2, 106.8 25.5
+Q 107.9 26.8, 109.8 26.8
+' fill='#000000'/><path d='M 142.4 88.2
+Q 142.4 85.2, 143.9 83.5
+Q 145.4 81.8, 148.2 81.8
+Q 151.0 81.8, 152.5 83.5
+Q 154.0 85.2, 154.0 88.2
+Q 154.0 91.2, 152.5 93.0
+Q 151.0 94.7, 148.2 94.7
+Q 145.4 94.7, 143.9 93.0
+Q 142.4 91.3, 142.4 88.2
+M 148.2 93.3
+Q 150.1 93.3, 151.1 92.0
+Q 152.2 90.7, 152.2 88.2
+Q 152.2 85.7, 151.1 84.5
+Q 150.1 83.2, 148.2 83.2
+Q 146.3 83.2, 145.2 84.5
+Q 144.2 85.7, 144.2 88.2
+Q 144.2 90.7, 145.2 92.0
+Q 146.3 93.3, 148.2 93.3
+' fill='#000000'/><path d='M 155.9 82.0
+L 157.6 82.0
+L 157.6 87.3
+L 164.0 87.3
+L 164.0 82.0
+L 165.8 82.0
+L 165.8 94.5
+L 164.0 94.5
+L 164.0 88.7
+L 157.6 88.7
+L 157.6 94.5
+L 155.9 94.5
+L 155.9 82.0
+' fill='#000000'/></svg></span></div>
+    <div class="pairbox"><span class="seat">seat 4</span><span class="nm">1,2-dichloroethane<br><span style="color:#6D6E71">compare with seat 0</span></span><span class="two"><svg xmlns='http://www.w3.org/2000/svg'
+width='169px' height='55px' viewBox='2.8 27.7 168.9 54.6'><path d='M 146.9,55.4 L 109.9,39.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 109.9,39.7 L 69.2,70.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 69.2,70.3 L 27.6,52.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 111.8,40.5 L 109.9,39.7 L 107.9,41.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 71.2,68.8 L 69.2,70.3 L 67.1,69.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 151.3 60.1
+Q 151.3 56.5, 152.9 54.7
+Q 154.6 52.8, 157.8 52.8
+Q 160.8 52.8, 162.4 54.9
+L 161.1 56.0
+Q 159.9 54.4, 157.8 54.4
+Q 155.7 54.4, 154.5 55.9
+Q 153.4 57.4, 153.4 60.1
+Q 153.4 63.0, 154.5 64.5
+Q 155.7 65.9, 158.1 65.9
+Q 159.7 65.9, 161.5 65.0
+L 162.1 66.5
+Q 161.3 67.0, 160.2 67.3
+Q 159.0 67.6, 157.8 67.6
+Q 154.6 67.6, 152.9 65.6
+Q 151.3 63.7, 151.3 60.1
+' fill='#000000'/><path d='M 163.9 51.9
+L 165.7 51.9
+L 165.7 67.4
+L 163.9 67.4
+L 163.9 51.9
+' fill='#000000'/><path d='M 8.8 50.9
+Q 8.8 47.3, 10.4 45.4
+Q 12.1 43.5, 15.3 43.5
+Q 18.3 43.5, 19.9 45.6
+L 18.5 46.7
+Q 17.4 45.2, 15.3 45.2
+Q 13.1 45.2, 12.0 46.6
+Q 10.8 48.1, 10.8 50.9
+Q 10.8 53.7, 12.0 55.2
+Q 13.2 56.7, 15.5 56.7
+Q 17.1 56.7, 19.0 55.7
+L 19.6 57.2
+Q 18.8 57.7, 17.7 58.0
+Q 16.5 58.3, 15.3 58.3
+Q 12.1 58.3, 10.4 56.4
+Q 8.8 54.4, 8.8 50.9
+' fill='#000000'/><path d='M 21.3 42.6
+L 23.2 42.6
+L 23.2 58.1
+L 21.3 58.1
+L 21.3 42.6
+' fill='#000000'/></svg></span></div>
+    <div class="pairbox"><span class="seat">seat 5</span><span class="nm">1,4-butanediol<br><span style="color:#6D6E71">five rotatable bonds</span></span><span class="two"><svg xmlns='http://www.w3.org/2000/svg'
+width='171px' height='43px' viewBox='1.9 33.4 170.7 43.2'><path d='M 146.9,55.8 L 126.6,45.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 126.6,45.4 L 101.0,61.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 101.0,61.9 L 73.9,48.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 73.9,48.1 L 48.4,64.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 48.4,64.6 L 28.1,54.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 127.6,45.9 L 126.6,45.4 L 125.3,46.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 102.3,61.1 L 101.0,61.9 L 99.7,61.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 75.3,48.8 L 73.9,48.1 L 72.6,48.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 49.6,63.8 L 48.4,64.6 L 47.3,64.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 149.5 59.3
+Q 149.5 57.1, 150.6 55.8
+Q 151.7 54.6, 153.7 54.6
+Q 155.8 54.6, 156.8 55.8
+Q 157.9 57.1, 157.9 59.3
+Q 157.9 61.5, 156.8 62.8
+Q 155.7 64.1, 153.7 64.1
+Q 151.7 64.1, 150.6 62.8
+Q 149.5 61.5, 149.5 59.3
+M 153.7 63.0
+Q 155.1 63.0, 155.9 62.1
+Q 156.6 61.1, 156.6 59.3
+Q 156.6 57.5, 155.9 56.6
+Q 155.1 55.6, 153.7 55.6
+Q 152.3 55.6, 151.5 56.6
+Q 150.8 57.5, 150.8 59.3
+Q 150.8 61.1, 151.5 62.1
+Q 152.3 63.0, 153.7 63.0
+' fill='#000000'/><path d='M 159.4 54.7
+L 160.6 54.7
+L 160.6 58.6
+L 165.3 58.6
+L 165.3 54.7
+L 166.6 54.7
+L 166.6 63.9
+L 165.3 63.9
+L 165.3 59.7
+L 160.6 59.7
+L 160.6 63.9
+L 159.4 63.9
+L 159.4 54.7
+' fill='#000000'/><path d='M 7.9 46.2
+L 9.2 46.2
+L 9.2 50.1
+L 13.9 50.1
+L 13.9 46.2
+L 15.1 46.2
+L 15.1 55.4
+L 13.9 55.4
+L 13.9 51.1
+L 9.2 51.1
+L 9.2 55.4
+L 7.9 55.4
+L 7.9 46.2
+' fill='#000000'/><path d='M 17.0 50.8
+Q 17.0 48.6, 18.1 47.3
+Q 19.2 46.1, 21.2 46.1
+Q 23.3 46.1, 24.4 47.3
+Q 25.5 48.6, 25.5 50.8
+Q 25.5 53.0, 24.4 54.3
+Q 23.3 55.5, 21.2 55.5
+Q 19.2 55.5, 18.1 54.3
+Q 17.0 53.0, 17.0 50.8
+M 21.2 54.5
+Q 22.6 54.5, 23.4 53.6
+Q 24.2 52.6, 24.2 50.8
+Q 24.2 49.0, 23.4 48.1
+Q 22.6 47.1, 21.2 47.1
+Q 19.8 47.1, 19.1 48.0
+Q 18.3 48.9, 18.3 50.8
+Q 18.3 52.6, 19.1 53.6
+Q 19.8 54.5, 21.2 54.5
+' fill='#000000'/></svg></span></div>
+    <div class="pairbox"><span class="seat">seat 6</span><span class="nm">ibuprofen<br><span style="color:#6D6E71">a real drug molecule</span></span><span class="two"><svg xmlns='http://www.w3.org/2000/svg'
+width='174px' height='87px' viewBox='0.5 11.5 173.5 87.0'><path d='M 6.5,53.7 L 27.8,52.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 27.8,52.4 L 37.2,33.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 27.8,52.4 L 39.5,70.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 39.5,70.1 L 60.7,68.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 60.7,68.8 L 70.2,49.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 70.2,49.8 L 91.4,48.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 72.2,52.8 L 89.8,51.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 91.4,48.5 L 103.2,66.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 103.2,66.2 L 93.7,85.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 99.5,66.4 L 91.7,82.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 93.7,85.2 L 72.5,86.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 103.2,66.2 L 124.4,64.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 124.4,64.9 L 136.1,82.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 124.4,64.9 L 133.9,45.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 135.7,45.7 L 127.9,33.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 133.1,47.5 L 125.2,35.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 133.9,45.9 L 149.1,44.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 72.5,86.5 L 60.7,68.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 74.1,83.2 L 64.4,68.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 38.9,69.2 L 39.5,70.1 L 40.6,70.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 69.7,50.7 L 70.2,49.8 L 71.3,49.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 90.4,48.5 L 91.4,48.5 L 92.0,49.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 94.2,84.3 L 93.7,85.2 L 92.6,85.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 73.5,86.5 L 72.5,86.5 L 71.9,85.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 133.4,46.8 L 133.9,45.9 L 134.6,45.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 117.9 28.2
+Q 117.9 25.9, 119.0 24.7
+Q 120.1 23.5, 122.1 23.5
+Q 124.2 23.5, 125.3 24.7
+Q 126.4 25.9, 126.4 28.2
+Q 126.4 30.4, 125.3 31.7
+Q 124.2 32.9, 122.1 32.9
+Q 120.1 32.9, 119.0 31.7
+Q 117.9 30.4, 117.9 28.2
+M 122.1 31.9
+Q 123.5 31.9, 124.3 30.9
+Q 125.1 30.0, 125.1 28.2
+Q 125.1 26.3, 124.3 25.4
+Q 123.5 24.5, 122.1 24.5
+Q 120.7 24.5, 120.0 25.4
+Q 119.2 26.3, 119.2 28.2
+Q 119.2 30.0, 120.0 30.9
+Q 120.7 31.9, 122.1 31.9
+' fill='#000000'/><path d='M 150.9 44.6
+Q 150.9 42.4, 152.0 41.1
+Q 153.1 39.9, 155.1 39.9
+Q 157.2 39.9, 158.2 41.1
+Q 159.3 42.4, 159.3 44.6
+Q 159.3 46.8, 158.2 48.1
+Q 157.1 49.3, 155.1 49.3
+Q 153.1 49.3, 152.0 48.1
+Q 150.9 46.8, 150.9 44.6
+M 155.1 48.3
+Q 156.5 48.3, 157.3 47.4
+Q 158.0 46.4, 158.0 44.6
+Q 158.0 42.8, 157.3 41.9
+Q 156.5 40.9, 155.1 40.9
+Q 153.7 40.9, 152.9 41.8
+Q 152.2 42.8, 152.2 44.6
+Q 152.2 46.4, 152.9 47.4
+Q 153.7 48.3, 155.1 48.3
+' fill='#000000'/><path d='M 160.8 40.0
+L 162.0 40.0
+L 162.0 43.9
+L 166.7 43.9
+L 166.7 40.0
+L 168.0 40.0
+L 168.0 49.2
+L 166.7 49.2
+L 166.7 45.0
+L 162.0 45.0
+L 162.0 49.2
+L 160.8 49.2
+L 160.8 40.0
+' fill='#000000'/></svg></span></div>
+    <div class="pairbox"><span class="seat">seat 7</span><span class="nm">alanine dipeptide<br><span style="color:#6D6E71">a Ramachandran plot</span></span><span class="two"><svg xmlns='http://www.w3.org/2000/svg'
+width='169px' height='122px' viewBox='2.8 -6.0 169.0 122.0'><path d='M 8.8,37.1 L 43.2,39.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 44.5,42.2 L 59.2,20.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 40.2,39.3 L 54.9,17.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 43.2,39.5 L 54.4,62.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 65.0,71.0 L 92.7,73.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 92.7,73.0 L 107.8,104.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 92.7,73.0 L 112.0,44.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 115.0,44.6 L 103.2,20.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.3,46.9 L 98.5,22.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 112.0,44.4 L 139.7,46.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 151.7,39.0 L 165.8,18.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 41.4,39.4 L 43.2,39.5 L 43.7,40.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 111.0,45.8 L 112.0,44.4 L 113.4,44.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 58.0 11.0
+Q 58.0 8.6, 59.2 7.3
+Q 60.3 6.0, 62.5 6.0
+Q 64.7 6.0, 65.8 7.3
+Q 67.0 8.6, 67.0 11.0
+Q 67.0 13.3, 65.8 14.7
+Q 64.6 16.0, 62.5 16.0
+Q 60.3 16.0, 59.2 14.7
+Q 58.0 13.3, 58.0 11.0
+M 62.5 14.9
+Q 64.0 14.9, 64.8 13.9
+Q 65.6 12.9, 65.6 11.0
+Q 65.6 9.0, 64.8 8.1
+Q 64.0 7.1, 62.5 7.1
+Q 61.0 7.1, 60.2 8.1
+Q 59.4 9.0, 59.4 11.0
+Q 59.4 12.9, 60.2 13.9
+Q 61.0 14.9, 62.5 14.9
+' fill='#000000'/><path d='M 45.0 65.7
+L 46.3 65.7
+L 46.3 69.8
+L 51.3 69.8
+L 51.3 65.7
+L 52.6 65.7
+L 52.6 75.4
+L 51.3 75.4
+L 51.3 70.9
+L 46.3 70.9
+L 46.3 75.4
+L 45.0 75.4
+L 45.0 65.7
+' fill='#000000'/><path d='M 56.1 65.7
+L 59.3 70.8
+Q 59.6 71.3, 60.1 72.3
+Q 60.7 73.2, 60.7 73.3
+L 60.7 65.7
+L 62.0 65.7
+L 62.0 75.4
+L 60.6 75.4
+L 57.2 69.8
+Q 56.8 69.1, 56.4 68.4
+Q 56.0 67.6, 55.8 67.4
+L 55.8 75.4
+L 54.6 75.4
+L 54.6 65.7
+L 56.1 65.7
+' fill='#000000'/><path d='M 92.4 13.4
+Q 92.4 11.0, 93.6 9.7
+Q 94.7 8.4, 96.9 8.4
+Q 99.1 8.4, 100.2 9.7
+Q 101.4 11.0, 101.4 13.4
+Q 101.4 15.8, 100.2 17.1
+Q 99.0 18.5, 96.9 18.5
+Q 94.8 18.5, 93.6 17.1
+Q 92.4 15.8, 92.4 13.4
+M 96.9 17.4
+Q 98.4 17.4, 99.2 16.4
+Q 100.0 15.4, 100.0 13.4
+Q 100.0 11.5, 99.2 10.5
+Q 98.4 9.5, 96.9 9.5
+Q 95.4 9.5, 94.6 10.5
+Q 93.8 11.5, 93.8 13.4
+Q 93.8 15.4, 94.6 16.4
+Q 95.4 17.4, 96.9 17.4
+' fill='#000000'/><path d='M 144.3 41.9
+L 147.5 47.1
+Q 147.8 47.6, 148.3 48.6
+Q 148.8 49.5, 148.8 49.5
+L 148.8 41.9
+L 150.1 41.9
+L 150.1 51.7
+L 148.8 51.7
+L 145.4 46.1
+Q 145.0 45.4, 144.5 44.6
+Q 144.1 43.9, 144.0 43.6
+L 144.0 51.7
+L 142.7 51.7
+L 142.7 41.9
+L 144.3 41.9
+' fill='#000000'/><path d='M 152.0 41.9
+L 153.4 41.9
+L 153.4 46.1
+L 158.4 46.1
+L 158.4 41.9
+L 159.7 41.9
+L 159.7 51.7
+L 158.4 51.7
+L 158.4 47.2
+L 153.4 47.2
+L 153.4 51.7
+L 152.0 51.7
+L 152.0 41.9
+' fill='#000000'/></svg></span></div>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide divider">
+  <div class="clock">notebook 4 &nbsp;·&nbsp; 8 minutes</div>
+  <h1>Molecular dynamics</h1>
+  <p class="note">Molecules at room temperature are not motionless. Following them as they move.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">Definitions and result</div>
+  <h2>Integrating the equations of motion</h2>
+  <div class="cols">
+    <div class="stack tight">
+      <div class="callout"><div class="k">Molecular dynamics</div>
+        <p class="sub" style="font-size:18px">Numerical integration of Newton's equations using forces from the potential energy surface. The result is a trajectory.</p></div>
+      <div class="callout"><div class="k">Timestep</div>
+        <p class="sub" style="font-size:18px">Must be short compared with the fastest motion. X&ndash;H stretches occur on a 10<sup>&minus;14</sup> s timescale, so a timestep of 1 fs or less is required. Whether a given value is short <em>enough</em> is settled by measurement, not by convention: here 0.5 fs is not, and 0.25 fs is.</p></div>
+      <div class="callout"><div class="k">Thermostat</div>
+        <p class="sub" style="font-size:18px">Couples the system to a heat bath so that it samples structures at a chosen temperature rather than conserving its initial energy.</p></div>
+    </div>
+    <div class="stack" style="justify-content:center">
+      <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='184px' height='165px' viewBox='34.8 -4.0 184.3 164.8'><ellipse cx='46.8' cy='35.6' rx='10.0' ry='10.0' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><ellipse cx='145.0' cy='142.0' rx='17.4' ry='10.0' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 54.2,48.8 L 75.8,72.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 59.4,44.1 L 78.2,64.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 75.8,72.5 L 121.6,62.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 121.6,62.6 L 135.8,17.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 129.5,60.9 L 141.3,24.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 135.8,17.9 L 181.6,8.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 181.6,8.0 L 213.1,42.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 179.2,15.7 L 205.2,44.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 213.1,42.7 L 198.9,87.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 198.9,87.3 L 153.1,97.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 193.4,81.3 L 155.5,89.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 153.1,97.3 L 142.2,131.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 153.1,97.3 L 121.6,62.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 74.7,71.3 L 75.8,72.5 L 78.0,72.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 135.1,20.2 L 135.8,17.9 L 138.1,17.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 179.3,8.5 L 181.6,8.0 L 183.2,9.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 211.6,41.0 L 213.1,42.7 L 212.4,44.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 199.6,85.1 L 198.9,87.3 L 196.6,87.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 40.8 35.5
+Q 40.8 32.3, 42.3 30.5
+Q 43.9 28.8, 46.8 28.8
+Q 49.8 28.8, 51.4 30.5
+Q 52.9 32.3, 52.9 35.5
+Q 52.9 38.7, 51.3 40.6
+Q 49.8 42.4, 46.8 42.4
+Q 43.9 42.4, 42.3 40.6
+Q 40.8 38.8, 40.8 35.5
+M 46.8 40.9
+Q 48.9 40.9, 50.0 39.5
+Q 51.1 38.2, 51.1 35.5
+Q 51.1 32.9, 50.0 31.6
+Q 48.9 30.3, 46.8 30.3
+Q 44.8 30.3, 43.7 31.6
+Q 42.6 32.9, 42.6 35.5
+Q 42.6 38.2, 43.7 39.5
+Q 44.8 40.9, 46.8 40.9
+' fill='#000000'/><path d='M 132.7 141.9
+Q 132.7 138.8, 134.3 137.0
+Q 135.8 135.2, 138.8 135.2
+Q 141.7 135.2, 143.3 137.0
+Q 144.9 138.8, 144.9 141.9
+Q 144.9 145.2, 143.3 147.0
+Q 141.7 148.8, 138.8 148.8
+Q 135.9 148.8, 134.3 147.0
+Q 132.7 145.2, 132.7 141.9
+M 138.8 147.3
+Q 140.8 147.3, 141.9 146.0
+Q 143.0 144.6, 143.0 141.9
+Q 143.0 139.3, 141.9 138.0
+Q 140.8 136.7, 138.8 136.7
+Q 136.8 136.7, 135.6 138.0
+Q 134.6 139.3, 134.6 141.9
+Q 134.6 144.6, 135.6 146.0
+Q 136.8 147.3, 138.8 147.3
+' fill='#000000'/><path d='M 146.9 135.3
+L 148.7 135.3
+L 148.7 141.0
+L 155.5 141.0
+L 155.5 135.3
+L 157.3 135.3
+L 157.3 148.6
+L 155.5 148.6
+L 155.5 142.5
+L 148.7 142.5
+L 148.7 148.6
+L 146.9 148.6
+L 146.9 135.3
+' fill='#000000'/></svg></div><figcaption>salicylaldehyde: the O&ndash;H donates a hydrogen bond to the carbonyl oxygen</figcaption></figure>
+      <p class="sub" style="font-size:18px">Four hundred femtoseconds is enough to <em>see</em> the molecule move, and not enough to measure how the hydrogen bond responds to temperature: repeat the run and the 300 K and 500 K numbers overlap. Breaking this bond costs several <span style="font-style:italic">kT</span>, so it is a rare event, and counting rare events takes picoseconds. That gap between what a trajectory costs and what it resolves is the central difficulty of dynamics, and a faster potential does not close it. No covalent bond breaks at either temperature, which is not guaranteed: a potential can reproduce equilibrium structures well and still fail during dynamics.</p>
+    </div>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow">A test worth running on any new potential</div>
+  <h2>Remove the thermostat and the potential has nowhere to hide</h2>
+  <div class="cols" style="align-items:center">
+    <div class="stack">
+      <div class="callout"><div class="k">Constant-energy dynamics</div>
+        <p style="font-size:19px">With no thermostat, the sum of kinetic and potential energy must be conserved. Two quantities, and the difference matters.</p></div>
+      <div class="callout"><div class="k">Drift</div>
+        <p class="sub" style="font-size:18px">The <em>slope</em> of the total energy against time. This is what must be zero, and it is: under 0.03 &micro;eV per step against 0.58 eV of thermal energy in the molecule. The forces really are the gradient of the energy.</p></div>
+      <div class="callout"><div class="k">Fluctuation</div>
+        <p class="sub" style="font-size:18px">The <em>spread</em> about that line. Not an error in the same sense, but it grows steeply with the timestep, and it is what makes a thermostat mis-set the temperature.</p></div>
+    </div>
+    <table>
+      <tr><th class="num">Timestep</th><th class="num asis">Drift / &micro;eV per step</th><th class="num asis">Fluctuation / meV</th></tr>
+      <tr><td class="num">1.00 fs</td><td class="num">0.03</td><td class="num">0.9</td></tr>
+      <tr><td class="num">0.50 fs</td><td class="num">0.02</td><td class="num">0.2</td></tr>
+      <tr class="hi"><td class="num">0.25 fs</td><td class="num">0.00</td><td class="num">0.1</td></tr>
+    </table>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide divider">
+  <div class="clock">notebook 5 &nbsp;·&nbsp; 10 minutes</div>
+  <h1>Reactions and transition states</h1>
+  <p class="note">Every structure so far has been a minimum. Chemistry is about the paths between them.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">Definitions</div>
+  <h2>Saddle points</h2>
+  <div class="cols">
+    <div class="stack tight">
+      <div class="callout"><div class="k">Transition state</div>
+        <p class="sub" style="font-size:18px">The highest point along the lowest-energy path from reactants to products. A <strong>first-order saddle point</strong>: a maximum along exactly one direction, a minimum along all others.</p></div>
+      <div class="callout"><div class="k">Activation barrier</div>
+        <p class="sub" style="font-size:18px">The energy of the transition state relative to the reactants. At room temperature each additional 1.4 kcal/mol slows the reaction roughly tenfold.</p></div>
+    </div>
+    <div class="stack tight">
+      <div class="callout"><div class="k">Hessian</div>
+        <p class="sub" style="font-size:18px">The matrix of second derivatives &part;<sup>2</sup><em>E</em>/&part;<em>R</em><sub>i</sub>&part;<em>R</em><sub>j</sub>. It describes the curvature of the surface, and its eigenvalues give the vibrational frequencies.</p></div>
+      <div class="callout"><div class="k">Imaginary frequency</div>
+        <p class="sub" style="font-size:18px">A frequency from a <em>negative</em> Hessian eigenvalue, reported as a negative number. A minimum has none. A transition state has <strong>exactly one</strong>, and its motion is the reaction itself.</p></div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:22px">AIMNet2 provides <strong>analytic</strong> second derivatives, obtained by differentiating the network twice in closed form. The alternative, finite differences, requires 6<em>N</em> additional gradient evaluations and a step size that must be chosen.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">A worked example</div>
+  <h2>Chloride attacking chloromethane</h2>
+  <div style="display:flex;justify-content:center;margin-bottom:6px"><svg xmlns='http://www.w3.org/2000/svg'
+width='296px' height='52px' viewBox='162.1 49.0 295.8 52.0'><path d='M 170.1 75.3
+Q 170.1 72.6, 171.4 71.1
+Q 172.7 69.7, 175.2 69.7
+Q 177.4 69.7, 178.6 71.3
+L 177.6 72.1
+Q 176.7 71.0, 175.2 71.0
+Q 173.5 71.0, 172.6 72.1
+Q 171.7 73.2, 171.7 75.3
+Q 171.7 77.5, 172.6 78.6
+Q 173.5 79.7, 175.3 79.7
+Q 176.5 79.7, 178.0 79.0
+L 178.4 80.2
+Q 177.8 80.6, 176.9 80.8
+Q 176.1 81.0, 175.1 81.0
+Q 172.7 81.0, 171.4 79.5
+Q 170.1 78.1, 170.1 75.3
+' fill='#000000'/><path d='M 179.8 69.0
+L 181.2 69.0
+L 181.2 80.8
+L 179.8 80.8
+L 179.8 69.0
+' fill='#000000'/><path d='M 183.1 71.2
+L 186.9 71.2
+L 186.9 72.1
+L 183.1 72.1
+L 183.1 71.2
+' fill='#000000'/><path d='M 202.5,65.0 L 202.5,85.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 192.5,75.0 L 212.5,75.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 218.1,74.9 L 249.5,74.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 252.8 75.3
+Q 252.8 72.6, 254.1 71.1
+Q 255.4 69.7, 257.9 69.7
+Q 260.1 69.7, 261.4 71.3
+L 260.3 72.1
+Q 259.4 71.0, 257.9 71.0
+Q 256.2 71.0, 255.3 72.1
+Q 254.4 73.2, 254.4 75.3
+Q 254.4 77.5, 255.3 78.6
+Q 256.2 79.7, 258.0 79.7
+Q 259.2 79.7, 260.7 79.0
+L 261.1 80.2
+Q 260.5 80.6, 259.7 80.8
+Q 258.8 81.0, 257.8 81.0
+Q 255.4 81.0, 254.1 79.5
+Q 252.8 78.1, 252.8 75.3
+' fill='#000000'/><path d='M 262.5 69.0
+L 263.9 69.0
+L 263.9 80.8
+L 262.5 80.8
+L 262.5 69.0
+' fill='#000000'/><path d='M 387.5,74.9 L 356.1,74.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 390.8 75.3
+Q 390.8 72.6, 392.1 71.1
+Q 393.4 69.7, 395.9 69.7
+Q 398.1 69.7, 399.4 71.3
+L 398.3 72.1
+Q 397.4 71.0, 395.9 71.0
+Q 394.2 71.0, 393.3 72.1
+Q 392.4 73.2, 392.4 75.3
+Q 392.4 77.5, 393.3 78.6
+Q 394.2 79.7, 396.0 79.7
+Q 397.2 79.7, 398.7 79.0
+L 399.1 80.2
+Q 398.5 80.6, 397.7 80.8
+Q 396.8 81.0, 395.8 81.0
+Q 393.4 81.0, 392.1 79.5
+Q 390.8 78.1, 390.8 75.3
+' fill='#000000'/><path d='M 400.5 69.0
+L 401.9 69.0
+L 401.9 80.8
+L 400.5 80.8
+L 400.5 69.0
+' fill='#000000'/><path d='M 417.5,65.0 L 417.5,85.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 407.5,75.0 L 427.5,75.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 433.1 75.3
+Q 433.1 72.6, 434.4 71.1
+Q 435.7 69.7, 438.2 69.7
+Q 440.4 69.7, 441.6 71.3
+L 440.6 72.1
+Q 439.7 71.0, 438.2 71.0
+Q 436.5 71.0, 435.6 72.1
+Q 434.7 73.2, 434.7 75.3
+Q 434.7 77.5, 435.6 78.6
+Q 436.5 79.7, 438.3 79.7
+Q 439.5 79.7, 441.0 79.0
+L 441.4 80.2
+Q 440.8 80.6, 439.9 80.8
+Q 439.1 81.0, 438.1 81.0
+Q 435.7 81.0, 434.4 79.5
+Q 433.1 78.1, 433.1 75.3
+' fill='#000000'/><path d='M 442.8 69.0
+L 444.2 69.0
+L 444.2 80.8
+L 442.8 80.8
+L 442.8 69.0
+' fill='#000000'/><path d='M 446.1 71.2
+L 449.9 71.2
+L 449.9 72.1
+L 446.1 72.1
+L 446.1 71.2
+' fill='#000000'/><path d='M 279.0,75.0 L 338.8,75.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 334.0,77.8 L 338.8,75.0 L 334.0,72.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /></svg></div>
+  <div class="cols" style="align-items:center;gap:34px">
+    <div class="stack tight">
+      <p class="sub">A saddle-point search located the transition state in <strong>5 steps</strong>. The Hessian there gives twelve vibrations, of which <strong>exactly one</strong> is imaginary, at &minus;193 cm<sup>&minus;1</sup>.</p>
+      <p class="sub">Displacements in that mode, normalised:</p>
+    </div>
+    <table style="font-size:19px">
+      <tr><th>Atom</th><th class="num">Displacement</th></tr>
+      <tr class="hi"><td>C</td><td class="num">1.00</td></tr>
+      <tr><td>H &times; 3</td><td class="num">0.24</td></tr>
+      <tr><td>Cl &times; 2</td><td class="num">0.18</td></tr>
+    </table>
+  </div>
+  <p class="sub" style="margin-top:18px">The carbon carries almost all the motion. What the mode describes is the carbon passing through the plane of its three hydrogens while one C&ndash;Cl bond lengthens and the other shortens: the inversion of configuration that defines an S<sub>N</sub>2 reaction.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act divider">
+  <div class="clock">notebook 6 &nbsp;·&nbsp; 13 minutes</div>
+  <span class="chip" style="align-self:flex-start;margin-bottom:18px">Exercise 2</span>
+  <h1>Infrared spectra</h1>
+  <p class="note">The same Hessian, evaluated at a minimum instead of a saddle point, gives a measurable spectrum.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act">
+  <div class="eyebrow">Exercise 2 &middot; definitions</div>
+  <h2 class="plain">From curvature to a spectrum</h2>
+  <div class="cols3">
+    <div class="callout"><div class="k">Normal mode</div>
+      <p class="sub" style="font-size:18px">A collective vibration in which every atom oscillates at the same frequency. A non-linear molecule of <em>N</em> atoms has 3<em>N</em> &minus; 6 of them; the other six are translations and rotations, which must be projected out.</p></div>
+    <div class="callout"><div class="k">Harmonic approximation</div>
+      <p class="sub" style="font-size:18px">The assumption that the energy near a minimum is quadratic in the displacements. Good for small displacements; it systematically overestimates X&ndash;H stretches, which are strongly anharmonic.</p></div>
+    <div class="callout"><div class="k">Infrared selection rule</div>
+      <p class="sub" style="font-size:18px">A vibration absorbs only if it <strong>changes the molecular dipole moment</strong>. Intensity &prop; |&part;<strong>&mu;</strong>/&part;<em>Q</em>|<sup>2</sup>. A mode that moves atoms without changing the dipole is invisible, whatever its amplitude.</p></div>
+  </div>
+  <p class="sub" style="margin-top:26px">The dipole derivative is obtained numerically, from 6<em>N</em> additional single-point evaluations. Each costs milliseconds, so the whole spectrum of a small molecule takes under a second.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act">
+  <div class="eyebrow">Exercise 2 &middot; what you should find</div>
+  <h2 class="plain">Two results, one of them a lesson about method</h2>
+  <div class="cols" style="align-items:center">
+    <table>
+      <tr><th>Water, 3 modes</th><th class="num">computed</th><th class="num asis">&times;0.96</th><th class="num">experiment</th></tr>
+      <tr class="hi"><td>bend</td><td class="num">1597</td><td class="num">&mdash;</td><td class="num">1595</td></tr>
+      <tr><td>symmetric stretch</td><td class="num">3791</td><td class="num">3639</td><td class="num">3657</td></tr>
+      <tr><td>antisymmetric stretch</td><td class="num">3942</td><td class="num">3785</td><td class="num">3756</td></tr>
+    </table>
+    <div class="stack tight">
+      <p class="sub"><strong>Bending and skeletal modes agree closely.</strong> The bend is within 2 cm<sup>&minus;1</sup>.</p>
+      <p class="sub"><strong>X&ndash;H stretches are 3 to 5 percent too high.</strong> This is the harmonic approximation, not the model: a real X&ndash;H potential is shallower than a parabola at large displacement. Quantum chemistry programs apply a conventional 0.96 scaling for exactly this reason.</p>
+    </div>
+  </div>
+  <div class="molgrid" style="grid-template-columns:repeat(8,1fr);gap:0 8px;margin-top:22px">
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='51px' height='48px' viewBox='56.9 31.2 50.7 47.6'><path d='M 62.9 43.4
+L 65.1 43.4
+L 65.1 50.0
+L 73.0 50.0
+L 73.0 43.4
+L 75.1 43.4
+L 75.1 59.0
+L 73.0 59.0
+L 73.0 51.8
+L 65.1 51.8
+L 65.1 59.0
+L 62.9 59.0
+L 62.9 43.4
+' fill='#000000'/><path d='M 78.3 58.4
+Q 78.6 57.5, 79.5 56.9
+Q 80.4 56.4, 81.7 56.4
+Q 83.2 56.4, 84.1 57.2
+Q 85.0 58.1, 85.0 59.6
+Q 85.0 61.1, 83.8 62.5
+Q 82.7 63.9, 80.4 65.6
+L 85.2 65.6
+L 85.2 66.8
+L 78.2 66.8
+L 78.2 65.8
+Q 80.1 64.4, 81.3 63.4
+Q 82.4 62.4, 83.0 61.5
+Q 83.5 60.6, 83.5 59.6
+Q 83.5 58.6, 83.0 58.1
+Q 82.5 57.5, 81.7 57.5
+Q 80.9 57.5, 80.3 57.9
+Q 79.8 58.2, 79.4 58.9
+L 78.3 58.4
+' fill='#000000'/><path d='M 87.3 51.1
+Q 87.3 47.4, 89.1 45.3
+Q 91.0 43.2, 94.4 43.2
+Q 97.9 43.2, 99.7 45.3
+Q 101.6 47.4, 101.6 51.1
+Q 101.6 54.9, 99.7 57.1
+Q 97.8 59.2, 94.4 59.2
+Q 91.0 59.2, 89.1 57.1
+Q 87.3 55.0, 87.3 51.1
+M 94.4 57.5
+Q 96.8 57.5, 98.1 55.9
+Q 99.4 54.3, 99.4 51.1
+Q 99.4 48.1, 98.1 46.6
+Q 96.8 45.0, 94.4 45.0
+Q 92.0 45.0, 90.7 46.5
+Q 89.5 48.1, 89.5 51.1
+Q 89.5 54.3, 90.7 55.9
+Q 92.0 57.5, 94.4 57.5
+' fill='#000000'/></svg></div><figcaption>water</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='150px' height='44px' viewBox='7.2 33.2 150.1 43.6'><path d='M 13.2,45.2 L 125.7,45.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 13.2,64.8 L 125.7,64.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 137.0 55.0
+Q 137.0 51.3, 138.9 49.2
+Q 140.7 47.1, 144.2 47.1
+Q 147.6 47.1, 149.5 49.2
+Q 151.3 51.3, 151.3 55.0
+Q 151.3 58.8, 149.4 61.0
+Q 147.6 63.1, 144.2 63.1
+Q 140.7 63.1, 138.9 61.0
+Q 137.0 58.9, 137.0 55.0
+M 144.2 61.4
+Q 146.5 61.4, 147.8 59.8
+Q 149.1 58.2, 149.1 55.0
+Q 149.1 52.0, 147.8 50.4
+Q 146.5 48.9, 144.2 48.9
+Q 141.8 48.9, 140.5 50.4
+Q 139.2 52.0, 139.2 55.0
+Q 139.2 58.2, 140.5 59.8
+Q 141.8 61.4, 144.2 61.4
+' fill='#000000'/></svg></div><figcaption>formaldehyde</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='140px' height='40px' viewBox='12.3 35.0 139.9 40.0'><path d='M 18.3,54.9 L 108.1,54.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 117.2 54.9
+Q 117.2 51.2, 119.1 49.1
+Q 120.9 47.0, 124.4 47.0
+Q 127.8 47.0, 129.7 49.1
+Q 131.5 51.2, 131.5 54.9
+Q 131.5 58.7, 129.7 60.9
+Q 127.8 63.0, 124.4 63.0
+Q 121.0 63.0, 119.1 60.9
+Q 117.2 58.7, 117.2 54.9
+M 124.4 61.2
+Q 126.8 61.2, 128.0 59.7
+Q 129.3 58.0, 129.3 54.9
+Q 129.3 51.9, 128.0 50.3
+Q 126.8 48.8, 124.4 48.8
+Q 122.0 48.8, 120.7 50.3
+Q 119.4 51.8, 119.4 54.9
+Q 119.4 58.1, 120.7 59.7
+Q 122.0 61.2, 124.4 61.2
+' fill='#000000'/><path d='M 134.0 47.2
+L 136.1 47.2
+L 136.1 53.8
+L 144.0 53.8
+L 144.0 47.2
+L 146.2 47.2
+L 146.2 62.8
+L 144.0 62.8
+L 144.0 55.6
+L 136.1 55.6
+L 136.1 62.8
+L 134.0 62.8
+L 134.0 47.2
+' fill='#000000'/></svg></div><figcaption>methanol</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='116px' height='122px' viewBox='24.1 -6.1 116.3 122.2'><path d='M 30.1,104.1 L 82.2,74.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 82.2,74.0 L 134.4,104.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 86.8,76.6 L 86.8,27.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 77.7,76.6 L 77.7,27.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.6,75.5 L 82.2,74.0 L 84.9,75.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 75.1 13.8
+Q 75.1 10.1, 76.9 8.0
+Q 78.8 5.9, 82.2 5.9
+Q 85.7 5.9, 87.6 8.0
+Q 89.4 10.1, 89.4 13.8
+Q 89.4 17.6, 87.5 19.7
+Q 85.7 21.9, 82.2 21.9
+Q 78.8 21.9, 76.9 19.7
+Q 75.1 17.6, 75.1 13.8
+M 82.2 20.1
+Q 84.6 20.1, 85.9 18.5
+Q 87.2 16.9, 87.2 13.8
+Q 87.2 10.7, 85.9 9.2
+Q 84.6 7.6, 82.2 7.6
+Q 79.9 7.6, 78.6 9.2
+Q 77.3 10.7, 77.3 13.8
+Q 77.3 16.9, 78.6 18.5
+Q 79.9 20.1, 82.2 20.1
+' fill='#000000'/></svg></div><figcaption>acetone</figcaption></figure>
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='158px' height='45px' viewBox='3.1 32.5 158.3 45.0'><path d='M 9.1,55.0 L 79.3,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,55.0 L 137.6,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,44.5 L 137.6,44.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,65.5 L 137.6,65.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 75.8,55.0 L 79.3,55.0 L 82.2,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 146.1 47.2
+L 151.2 55.5
+Q 151.7 56.3, 152.5 57.8
+Q 153.3 59.2, 153.4 59.3
+L 153.4 47.2
+L 155.4 47.2
+L 155.4 62.8
+L 153.3 62.8
+L 147.8 53.8
+Q 147.2 52.7, 146.5 51.5
+Q 145.8 50.3, 145.6 49.9
+L 145.6 62.8
+L 143.6 62.8
+L 143.6 47.2
+L 146.1 47.2
+' fill='#000000'/></svg></div><figcaption>acetonitrile</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='131px' height='123px' viewBox='16.7 -6.5 131.1 123.0'><path d='M 121.5,20.0 L 84.7,41.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 84.7,41.2 L 43.0,17.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 84.7,41.2 L 84.7,83.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 126.2 14.4
+Q 126.2 10.5, 128.0 8.5
+Q 129.8 6.4, 133.3 6.4
+Q 136.5 6.4, 138.2 8.7
+L 136.7 9.9
+Q 135.5 8.2, 133.3 8.2
+Q 130.9 8.2, 129.7 9.8
+Q 128.4 11.4, 128.4 14.4
+Q 128.4 17.4, 129.7 19.0
+Q 131.0 20.6, 133.5 20.6
+Q 135.2 20.6, 137.2 19.5
+L 137.8 21.2
+Q 137.0 21.7, 135.8 22.0
+Q 134.5 22.3, 133.2 22.3
+Q 129.8 22.3, 128.0 20.3
+Q 126.2 18.2, 126.2 14.4
+' fill='#000000'/><path d='M 139.7 5.5
+L 141.8 5.5
+L 141.8 22.1
+L 139.7 22.1
+L 139.7 5.5
+' fill='#000000'/><path d='M 22.7 14.4
+Q 22.7 10.5, 24.5 8.5
+Q 26.4 6.4, 29.8 6.4
+Q 33.0 6.4, 34.7 8.7
+L 33.3 9.9
+Q 32.0 8.2, 29.8 8.2
+Q 27.5 8.2, 26.2 9.8
+Q 25.0 11.4, 25.0 14.4
+Q 25.0 17.4, 26.3 19.0
+Q 27.5 20.6, 30.0 20.6
+Q 31.8 20.6, 33.7 19.5
+L 34.4 21.2
+Q 33.6 21.7, 32.3 22.0
+Q 31.1 22.3, 29.7 22.3
+Q 26.4 22.3, 24.5 20.3
+Q 22.7 18.2, 22.7 14.4
+' fill='#000000'/><path d='M 36.3 5.5
+L 38.3 5.5
+L 38.3 22.1
+L 36.3 22.1
+L 36.3 5.5
+' fill='#000000'/><path d='M 78.8 96.5
+Q 78.8 92.7, 80.6 90.7
+Q 82.4 88.6, 85.8 88.6
+Q 89.0 88.6, 90.7 90.9
+L 89.3 92.1
+Q 88.0 90.4, 85.8 90.4
+Q 83.5 90.4, 82.2 92.0
+Q 81.0 93.5, 81.0 96.5
+Q 81.0 99.6, 82.3 101.2
+Q 83.6 102.7, 86.1 102.7
+Q 87.8 102.7, 89.8 101.7
+L 90.4 103.4
+Q 89.6 103.9, 88.3 104.2
+Q 87.1 104.5, 85.7 104.5
+Q 82.4 104.5, 80.6 102.4
+Q 78.8 100.4, 78.8 96.5
+' fill='#000000'/><path d='M 92.3 87.7
+L 94.3 87.7
+L 94.3 104.3
+L 92.3 104.3
+L 92.3 87.7
+' fill='#000000'/></svg></div><figcaption>chloroform</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='126px' height='123px' viewBox='19.1 -6.5 126.3 123.0'><path d='M 139.4,55.0 L 110.8,104.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.8,104.5 L 53.7,104.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.9,95.9 L 58.6,95.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 53.7,104.5 L 25.1,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 25.1,55.0 L 53.7,5.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 35.0,55.0 L 58.6,14.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 53.7,5.5 L 110.8,5.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.8,5.5 L 139.4,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.9,14.1 L 129.5,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 138.0,57.5 L 139.4,55.0 L 138.0,52.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 112.3,102.0 L 110.8,104.5 L 108.0,104.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 56.5,104.5 L 53.7,104.5 L 52.2,102.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 26.5,57.5 L 25.1,55.0 L 26.5,52.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 52.2,8.0 L 53.7,5.5 L 56.5,5.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 108.0,5.5 L 110.8,5.5 L 112.3,8.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /></svg></div><figcaption>benzene</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='154px' height='67px' viewBox='5.1 21.6 154.3 66.8'><path d='M 11.1,68.3 L 71.4,33.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 71.4,33.6 L 118.5,60.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 68.4,35.3 L 71.4,33.6 L 73.7,34.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 124.5 68.4
+Q 124.5 64.6, 126.3 62.5
+Q 128.2 60.5, 131.6 60.5
+Q 135.1 60.5, 136.9 62.5
+Q 138.8 64.6, 138.8 68.4
+Q 138.8 72.2, 136.9 74.3
+Q 135.0 76.4, 131.6 76.4
+Q 128.2 76.4, 126.3 74.3
+Q 124.5 72.2, 124.5 68.4
+M 131.6 74.7
+Q 134.0 74.7, 135.3 73.1
+Q 136.6 71.5, 136.6 68.4
+Q 136.6 65.3, 135.3 63.8
+Q 134.0 62.2, 131.6 62.2
+Q 129.2 62.2, 127.9 63.8
+Q 126.7 65.3, 126.7 68.4
+Q 126.7 71.5, 127.9 73.1
+Q 129.2 74.7, 131.6 74.7
+' fill='#000000'/><path d='M 141.2 60.6
+L 143.3 60.6
+L 143.3 67.3
+L 151.3 67.3
+L 151.3 60.6
+L 153.4 60.6
+L 153.4 76.2
+L 151.3 76.2
+L 151.3 69.0
+L 143.3 69.0
+L 143.3 76.2
+L 141.2 76.2
+L 141.2 60.6
+' fill='#000000'/></svg></div><figcaption>ethanol</figcaption></figure>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act divider">
+  <div class="clock">notebook 7 &nbsp;·&nbsp; 13 minutes</div>
+  <span class="chip" style="align-self:flex-start;margin-bottom:18px">Exercise 3</span>
+  <h1>Chemical reactivity</h1>
+  <p class="note">Where will a molecule react, and how readily? Answered without computing a transition state.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act">
+  <div class="eyebrow">Exercise 3 &middot; definitions</div>
+  <h2 class="plain">Reactivity from three charge states</h2>
+  <div class="cols">
+    <div class="stack tight">
+      <div class="callout"><div class="k">Ionisation potential and electron affinity</div>
+        <p class="sub" style="font-size:18px"><em>I</em> = <em>E</em>(<em>N</em>&minus;1) &minus; <em>E</em>(<em>N</em>) and <em>A</em> = <em>E</em>(<em>N</em>) &minus; <em>E</em>(<em>N</em>+1), both at the geometry of the neutral molecule. A negative <em>A</em> means the isolated molecule does not bind an extra electron, which is usual in the gas phase.</p></div>
+      <div class="callout"><div class="k">Electrophilicity index</div>
+        <p class="sub" style="font-size:18px"><em>&omega;</em> = <em>&mu;</em><sup>2</sup>/2<em>&eta;</em>, with <em>&mu;</em> = &minus;(<em>I</em>+<em>A</em>)/2 and <em>&eta;</em> = <em>I</em>&minus;<em>A</em>. A single number for the whole molecule: it ranks reactivity but says nothing about position.</p></div>
+    </div>
+    <div class="callout"><div class="k">Fukui function</div>
+      <p style="font-size:19px">The position-resolved counterpart, condensed onto atom <em>k</em>:</p>
+      <p class="sub" style="font-size:18px;margin-top:10px"><em>f</em><sup>+</sup>(<em>k</em>) = <em>q</em>(<em>k</em>,<em>N</em>) &minus; <em>q</em>(<em>k</em>,<em>N</em>+1) &nbsp;&mdash;&nbsp; where added electron density goes. Large <em>f</em><sup>+</sup> marks the site of <strong>nucleophilic</strong> attack.</p>
+      <p class="sub" style="font-size:18px;margin-top:8px"><em>f</em><sup>&minus;</sup>(<em>k</em>) = <em>q</em>(<em>k</em>,<em>N</em>&minus;1) &minus; <em>q</em>(<em>k</em>,<em>N</em>) &nbsp;&mdash;&nbsp; where density is most readily removed. Large <em>f</em><sup>&minus;</sup> marks the site of <strong>electrophilic</strong> attack.</p>
+      <p class="sub" style="font-size:17px;margin-top:10px">Both require the ions, which are doublets. This exercise is only possible because charge and multiplicity are model inputs.</p>
+    </div>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act">
+  <div class="eyebrow">Exercise 3 &middot; what you should find</div>
+  <h2 class="plain">The index ranks; the Fukui function locates</h2>
+  <div class="molgrid" style="grid-template-columns:repeat(4,1fr);gap:0 14px">
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='145px' height='147px' viewBox='27.6 -3.4 144.8 146.8'><ellipse cx='100.0' cy='93.1' rx='16.4' ry='16.4' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 33.6,131.4 L 100.0,93.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 100.0,93.1 L 166.4,131.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.8,96.4 L 105.8,31.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 94.2,96.4 L 94.2,31.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 96.7,95.0 L 100.0,93.1 L 103.3,95.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 92.8 16.5
+Q 92.8 12.7, 94.7 10.6
+Q 96.5 8.6, 100.0 8.6
+Q 103.5 8.6, 105.3 10.6
+Q 107.2 12.7, 107.2 16.5
+Q 107.2 20.3, 105.3 22.4
+Q 103.4 24.5, 100.0 24.5
+Q 96.6 24.5, 94.7 22.4
+Q 92.8 20.3, 92.8 16.5
+M 100.0 22.8
+Q 102.4 22.8, 103.7 21.2
+Q 105.0 19.6, 105.0 16.5
+Q 105.0 13.4, 103.7 11.9
+Q 102.4 10.3, 100.0 10.3
+Q 97.6 10.3, 96.3 11.9
+Q 95.0 13.4, 95.0 16.5
+Q 95.0 19.6, 96.3 21.2
+Q 97.6 22.8, 100.0 22.8
+' fill='#000000'/></svg></div><figcaption>acetone<br><em>&omega;</em> = 0.65 eV</figcaption></figure>
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='195px' height='138px' viewBox='5.0 1.2 195.0 137.6'><ellipse cx='194.0' cy='91.5' rx='15.0' ry='15.0' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 11.0,126.8 L 72.0,91.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 77.3,94.6 L 77.3,35.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 66.7,94.6 L 66.7,35.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 72.0,91.5 L 133.0,126.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 133.0,126.8 L 194.0,91.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 133.0,114.6 L 188.7,82.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 68.9,93.3 L 72.0,91.5 L 75.0,93.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 129.9,125.0 L 133.0,126.8 L 136.0,125.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 64.8 21.2
+Q 64.8 17.4, 66.7 15.3
+Q 68.5 13.2, 72.0 13.2
+Q 75.4 13.2, 77.3 15.3
+Q 79.1 17.4, 79.1 21.2
+Q 79.1 24.9, 77.3 27.1
+Q 75.4 29.2, 72.0 29.2
+Q 68.6 29.2, 66.7 27.1
+Q 64.8 25.0, 64.8 21.2
+M 72.0 27.5
+Q 74.4 27.5, 75.6 25.9
+Q 76.9 24.3, 76.9 21.2
+Q 76.9 18.1, 75.6 16.6
+Q 74.4 15.0, 72.0 15.0
+Q 69.6 15.0, 68.3 16.5
+Q 67.0 18.1, 67.0 21.2
+Q 67.0 24.3, 68.3 25.9
+Q 69.6 27.5, 72.0 27.5
+' fill='#000000'/></svg></div><figcaption>methyl vinyl ketone<br><em>&omega;</em> = 1.06 eV</figcaption></figure>
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='186px' height='62px' viewBox='18.7 38.6 186.2 62.5'><ellipse cx='24.7' cy='75.7' rx='13.7' ry='13.7' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 24.7,75.7 L 83.6,50.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 28.5,84.5 L 82.3,61.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 83.6,50.6 L 134.8,89.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 134.8,89.1 L 181.0,69.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 136.1,78.1 L 177.2,60.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.7,51.9 L 83.6,50.6 L 86.2,52.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 132.2,87.2 L 134.8,89.1 L 137.1,88.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 184.6 59.7
+Q 184.6 55.9, 186.5 53.9
+Q 188.3 51.8, 191.8 51.8
+Q 195.2 51.8, 197.1 53.9
+Q 198.9 55.9, 198.9 59.7
+Q 198.9 63.5, 197.0 65.6
+Q 195.2 67.8, 191.8 67.8
+Q 188.3 67.8, 186.5 65.6
+Q 184.6 63.5, 184.6 59.7
+M 191.8 66.0
+Q 194.1 66.0, 195.4 64.4
+Q 196.7 62.8, 196.7 59.7
+Q 196.7 56.6, 195.4 55.1
+Q 194.1 53.5, 191.8 53.5
+Q 189.4 53.5, 188.1 55.1
+Q 186.8 56.6, 186.8 59.7
+Q 186.8 62.8, 188.1 64.4
+Q 189.4 66.0, 191.8 66.0
+' fill='#000000'/></svg></div><figcaption>acrolein<br><em>&omega;</em> = 1.18 eV</figcaption></figure>
+    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='186px' height='75px' viewBox='5.0 35.8 186.4 75.2'><ellipse cx='185.4' cy='54.6' rx='13.6' ry='13.6' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 185.4,54.6 L 139.5,99.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 178.8,47.8 L 136.9,88.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 139.5,99.0 L 78.2,81.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 78.2,81.4 L 28.3,67.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 75.6,90.6 L 25.7,76.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.8,72.2 L 30.9,57.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 141.8,96.8 L 139.5,99.0 L 136.5,98.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 81.3,82.3 L 78.2,81.4 L 75.7,80.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 13.4 56.1
+L 18.5 64.3
+Q 19.0 65.1, 19.9 66.6
+Q 20.7 68.1, 20.7 68.2
+L 20.7 56.1
+L 22.8 56.1
+L 22.8 71.7
+L 20.7 71.7
+L 15.2 62.6
+Q 14.5 61.6, 13.9 60.4
+Q 13.2 59.2, 13.0 58.8
+L 13.0 71.7
+L 11.0 71.7
+L 11.0 56.1
+L 13.4 56.1
+' fill='#000000'/></svg></div><figcaption>acrylonitrile<br><em>&omega;</em> = 1.20 eV</figcaption></figure>
+  </div>
+  <p class="sub" style="margin-top:18px"><strong>The electrophilicity ordering is chemically correct.</strong> Acetone, with no conjugated double bond, is much the weakest. Among the conjugated acceptors <em>&omega;</em> rises with the strength of the withdrawing group.</p>
+  <p class="sub" style="margin-top:12px"><strong>Every conjugated acceptor places the largest <em>f</em><sup>+</sup> on the carbon marked in red</strong>, the one <em>&beta;</em> to the carbonyl, not on the carbonyl carbon. For methyl vinyl ketone: 0.232 against 0.135. That is the site of conjugate addition, recovered from partial charges alone, with no orbital analysis and no transition state.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide act">
+  <div class="eyebrow">Exercise 3 &middot; the limitation, stated plainly</div>
+  <h2 class="plain">Where the descriptor works, and where it does not</h2>
+  <div class="cols" style="align-items:center;gap:30px">
+    <table style="font-size:18px">
+      <tr><th>Mean <em>f</em><sup>&minus;</sup></th><th class="num">ortho</th><th class="num">meta</th><th class="num">para</th><th>classical</th></tr>
+      <tr><td>phenol</td><td class="num">0.113</td><td class="num">0.054</td><td class="num">0.159</td><td class="sub">o/p &#10003;</td></tr>
+      <tr><td>aniline</td><td class="num">0.098</td><td class="num">0.036</td><td class="num">0.139</td><td class="sub">o/p &#10003;</td></tr>
+      <tr><td>anisole</td><td class="num">0.089</td><td class="num">0.053</td><td class="num">0.147</td><td class="sub">o/p &#10003;</td></tr>
+      <tr class="hi"><td>nitrobenzene</td><td class="num">0.087</td><td class="num">0.120</td><td class="num">0.143</td><td class="sub">meta, partly</td></tr>
+    </table>
+    <div class="molgrid" style="grid-template-columns:1fr 1fr;gap:0 8px">
+      <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='174px' height='107px' viewBox='3.0 8.9 174.0 106.7'><path d='M 141.8,62.2 L 104.4,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 104.4,62.2 L 80.6,103.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 96.2,62.2 L 76.4,96.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.6,103.6 L 32.9,103.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 32.9,103.6 L 9.0,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.0,96.4 L 17.3,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 9.0,62.2 L 32.9,20.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 32.9,20.9 L 80.6,20.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.0,28.1 L 76.4,28.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.6,20.9 L 104.4,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 81.8,101.5 L 80.6,103.6 L 78.2,103.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 35.2,103.6 L 32.9,103.6 L 31.7,101.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 10.2,64.3 L 9.0,62.2 L 10.2,60.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 31.7,23.0 L 32.9,20.9 L 35.2,20.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 78.2,20.9 L 80.6,20.9 L 81.8,23.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 145.9 62.3
+Q 145.9 59.0, 147.5 57.2
+Q 149.1 55.4, 152.1 55.4
+Q 155.1 55.4, 156.7 57.2
+Q 158.3 59.0, 158.3 62.3
+Q 158.3 65.6, 156.7 67.4
+Q 155.1 69.3, 152.1 69.3
+Q 149.1 69.3, 147.5 67.4
+Q 145.9 65.6, 145.9 62.3
+M 152.1 67.8
+Q 154.2 67.8, 155.3 66.4
+Q 156.4 65.0, 156.4 62.3
+Q 156.4 59.6, 155.3 58.3
+Q 154.2 56.9, 152.1 56.9
+Q 150.1 56.9, 148.9 58.3
+Q 147.8 59.6, 147.8 62.3
+Q 147.8 65.0, 148.9 66.4
+Q 150.1 67.8, 152.1 67.8
+' fill='#000000'/><path d='M 160.4 55.6
+L 162.3 55.6
+L 162.3 61.3
+L 169.2 61.3
+L 169.2 55.6
+L 171.0 55.6
+L 171.0 69.1
+L 169.2 69.1
+L 169.2 62.8
+L 162.3 62.8
+L 162.3 69.1
+L 160.4 69.1
+L 160.4 55.6
+' fill='#000000'/></svg></div><figcaption>phenol</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+width='174px' height='111px' viewBox='3.0 6.8 174.0 110.9'><path d='M 156.5,36.6 L 146.5,53.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 150.9,33.4 L 140.9,50.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 143.7,72.0 L 153.8,89.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 129.7,62.2 L 95.0,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 95.0,62.2 L 73.5,99.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 87.6,62.2 L 69.8,92.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 73.5,99.4 L 30.5,99.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 30.5,99.4 L 9.0,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 34.2,92.9 L 16.4,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 9.0,62.2 L 30.5,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 30.5,24.9 L 73.5,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 34.2,31.4 L 69.8,31.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 73.5,24.9 L 95.0,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 74.6,97.5 L 73.5,99.4 L 71.4,99.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 32.7,99.4 L 30.5,99.4 L 29.4,97.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 10.1,64.0 L 9.0,62.2 L 10.1,60.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 29.4,26.8 L 30.5,24.9 L 32.7,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 71.4,24.9 L 73.5,24.9 L 74.6,26.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 153.9 24.9
+Q 153.9 22.0, 155.4 20.4
+Q 156.8 18.8, 159.5 18.8
+Q 162.2 18.8, 163.7 20.4
+Q 165.1 22.0, 165.1 24.9
+Q 165.1 27.9, 163.6 29.6
+Q 162.2 31.3, 159.5 31.3
+Q 156.8 31.3, 155.4 29.6
+Q 153.9 27.9, 153.9 24.9
+M 159.5 29.9
+Q 161.4 29.9, 162.4 28.6
+Q 163.4 27.4, 163.4 24.9
+Q 163.4 22.6, 162.4 21.4
+Q 161.4 20.1, 159.5 20.1
+Q 157.7 20.1, 156.6 21.3
+Q 155.6 22.5, 155.6 24.9
+Q 155.6 27.4, 156.6 28.6
+Q 157.7 29.9, 159.5 29.9
+' fill='#000000'/><path d='M 135.3 56.1
+L 139.3 62.5
+Q 139.7 63.2, 140.3 64.3
+Q 141.0 65.5, 141.0 65.5
+L 141.0 56.1
+L 142.6 56.1
+L 142.6 68.2
+L 141.0 68.2
+L 136.7 61.2
+Q 136.2 60.4, 135.6 59.4
+Q 135.1 58.5, 135.0 58.2
+L 135.0 68.2
+L 133.4 68.2
+L 133.4 56.1
+L 135.3 56.1
+' fill='#000000'/><path d='M 144.9 58.3
+L 147.1 58.3
+L 147.1 56.0
+L 148.0 56.0
+L 148.0 58.3
+L 150.2 58.3
+L 150.2 59.1
+L 148.0 59.1
+L 148.0 61.3
+L 147.1 61.3
+L 147.1 59.1
+L 144.9 59.1
+L 144.9 58.3
+' fill='#000000'/><path d='M 153.9 99.4
+Q 153.9 96.5, 155.4 94.9
+Q 156.8 93.2, 159.5 93.2
+Q 162.2 93.2, 163.7 94.9
+Q 165.1 96.5, 165.1 99.4
+Q 165.1 102.4, 163.6 104.1
+Q 162.2 105.7, 159.5 105.7
+Q 156.8 105.7, 155.4 104.1
+Q 153.9 102.4, 153.9 99.4
+M 159.5 104.4
+Q 161.4 104.4, 162.4 103.1
+Q 163.4 101.9, 163.4 99.4
+Q 163.4 97.0, 162.4 95.8
+Q 161.4 94.6, 159.5 94.6
+Q 157.7 94.6, 156.6 95.8
+Q 155.6 97.0, 155.6 99.4
+Q 155.6 101.9, 156.6 103.1
+Q 157.7 104.4, 159.5 104.4
+' fill='#000000'/><path d='M 166.8 95.2
+L 171.0 95.2
+L 171.0 96.1
+L 166.8 96.1
+L 166.8 95.2
+' fill='#000000'/></svg></div><figcaption>nitrobenzene</figcaption></figure>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:18px">For the three <strong>activated</strong> rings, ortho and para clearly exceed meta: the textbook pattern. For the <strong>deactivated</strong> ring the descriptor places meta above ortho, capturing part of the effect, but para comes out highest where experiment gives meta.</p>
+  <p class="sub" style="margin-top:10px"><strong>The reason matters.</strong> Condensed Fukui functions describe how the ground-state density redistributes on adding or removing an electron. Regioselectivity in aromatic substitution is governed by the relative energies of the <em>&sigma;</em>-complex intermediates, which is a different quantity. For activated rings the two correlate; for deactivated rings they need not. This is a screening method with a known failure mode, not a predictive one.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">Summary</div>
+  <h2>What was computed in ninety minutes</h2>
+  <table>
+    <tr><th class="num">&nbsp;</th><th>Quantity</th><th>Obtained from</th></tr>
+    <tr><td class="num">1</td><td>energies, forces, partial charges, dipole moments</td><td class="sub">a single evaluation of the surface</td></tr>
+    <tr><td class="num">2</td><td>equilibrium structures</td><td class="sub">following the forces downhill</td></tr>
+    <tr><td class="num">3</td><td>conformer populations at 298 K</td><td class="sub">many minima plus the Boltzmann distribution</td></tr>
+    <tr><td class="num">4</td><td>thermal motion, and what a trajectory can and cannot resolve</td><td class="sub">integrating the equations of motion</td></tr>
+    <tr><td class="num">5</td><td>a transition state and its reaction coordinate</td><td class="sub">the Hessian at a saddle point</td></tr>
+    <tr><td class="num">6</td><td>an infrared spectrum with assigned bands</td><td class="sub">the Hessian at a minimum, plus dipole derivatives</td></tr>
+    <tr><td class="num">7</td><td>electrophilicity and the site of attack</td><td class="sub">energies and charges at <em>N</em>, <em>N</em>&plusmn;1 electrons</td></tr>
+  </table>
+  <p class="sub" style="margin-top:24px">Every one of these is a property of the same function, <em>E</em>(<strong>R</strong>), evaluated in a different way.</p>
+  ${FOOT}
+</div>`,
+
+`<div class="slide">
+  <div class="eyebrow grey">Notebook 8</div>
+  <h2>Beyond an isolated molecule</h2>
+  <div class="cols">
+    <ul class="tight">
+      <li><strong>Periodic systems</strong> &mdash; liquids and molecular crystals, with Ewald or particle-mesh electrostatics</li>
+      <li><strong>Open-shell chemistry</strong> &mdash; bond dissociation energies within 3 kcal/mol of literature values</li>
+      <li><strong>Palladium catalysis</strong> &mdash; <code>aimnet2-pd</code>, the one model with implicit solvation</li>
+    </ul>
+    <ul class="tight">
+      <li><strong>Long-timescale dynamics</strong> &mdash; the model driven by OpenMM rather than ASE</li>
+      <li><strong>Reaction paths</strong> &mdash; nudged elastic band and intrinsic reaction coordinates through pysisyphus</li>
+      <li><strong>Many molecules</strong> &mdash; Auto3D, which already uses AIMNet2 by default</li>
+    </ul>
+  </div>
+  <div class="rule" style="margin:26px 0 20px"></div>
+  <div class="cols">
+    <p class="sub"><strong>Installation.</strong> <code>pip install "aimnet[ase]"</code>. The package is <strong>aimnet</strong>; the repository <code>isayevlab/AIMNet2</code> is deprecated and instructions that begin by cloning it are out of date.</p>
+    <p class="mono sub" style="font-size:17px;line-height:1.85">github.com/isayevlab/aimnetcentral<br>isayevlab.github.io/aimnetcentral<br>huggingface.co/spaces/isayevlab/aimnet2-demo</p>
+  </div>
+  ${FOOT}
+</div>`,
+
+`<div class="slide title-slide">
+  <div class="wordmark">Carnegie Mellon University<span> · </span>Isayev Laboratory</div>
+  <div>
+    <h1 style="font-size:70px">Thank you</h1>
+    <div class="title-rule"></div>
+    <p class="sub" style="font-size:19px;line-height:1.9">
+      Anstine, D. M.; Zubatyuk, R.; Isayev, O. <em>Chem. Sci.</em> <strong>2025</strong>, <em>16</em>, 10228.<br>
+      Kalita, B. <em>et al.</em> <em>Angew. Chem. Int. Ed.</em> <strong>2026</strong>, e202516763.<br>
+      Parr, R. G.; Yang, W. <em>J. Am. Chem. Soc.</em> <strong>1984</strong>, <em>106</em>, 4049 &mdash; Fukui functions.<br>
+      Parr, R. G.; Szentp&aacute;ly, L. v.; Liu, S. <em>J. Am. Chem. Soc.</em> <strong>1999</strong>, <em>121</em>, 1922 &mdash; electrophilicity index.
+    </p>
+    <p class="mono sub" style="margin-top:24px;font-size:19px">github.com/isayevlab/ml4mol2026-aimnet2</p>
+  </div>
+  <p class="sub" style="font-size:16px">AiMat Summer School 2026, organised by Tobias Schl&ouml;der and Pascal Friederich, KIT. Supported by Carl-Zeiss-Stiftung and the KIT centres MaTeLiS and KCIST.</p>
+</div>`,
+];
+
+/* ------------------------------ engine ------------------------------ */
+const stage = document.getElementById('stage');
+stage.innerHTML = SLIDES.join('') + '<div id="bar"></div>';
+const slides = [...stage.querySelectorAll('.slide')];
+const bar = document.getElementById('bar');
+let i = 0;
+
+function titleOf(el){
+  const h = el.querySelector('h1,h2');
+  return h ? h.textContent.trim().replace(/\s+/g,' ').slice(0,72) : 'Slide';
+}
+function show(n, push=true){
+  i = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach((s, k) => s.classList.toggle('on', k === i));
+  bar.style.width = ((i) / (slides.length - 1) * 100) + '%';
+  const pg = slides[i].querySelector('.pg');
+  if (pg) pg.textContent = (i + 1) + ' / ' + slides.length;
+  if (push) history.replaceState(null, '', '#/' + (i + 1));
+}
+function fit(){
+  const s = Math.min(innerWidth / 1280, innerHeight / 720);
+  stage.style.transform = 'scale(' + s + ')';
+}
+addEventListener('resize', fit);
+
+const ov = document.getElementById('ov'), ovg = document.getElementById('ovg');
+slides.forEach((s, k) => {
+  const b = document.createElement('button');
+  b.className = 'ovi';
+  b.innerHTML = '<div class="n">' + (k + 1) + '</div><div class="t">' + titleOf(s) + '</div>';
+  b.onclick = () => { ov.classList.remove('on'); show(k); };
+  ovg.appendChild(b);
+});
+
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (ov.classList.contains('on') && k !== 'o' && k !== 'escape') return;
+  if (k === 'arrowright' || k === ' ' || k === 'pagedown' || k === 'n') { show(i + 1); e.preventDefault(); }
+  else if (k === 'arrowleft' || k === 'pageup') show(i - 1);
+  else if (k === 'home') show(0);
+  else if (k === 'end') show(slides.length - 1);
+  else if (k === 'o') ov.classList.toggle('on');
+  else if (k === 'escape') ov.classList.remove('on');
+  else if (k === 'f') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+  else if (k === 'p') print();
+});
+addEventListener('click', e => { if (!e.target.closest('#ov,#help')) show(i + 1); });
+
+let tx = 0;
+addEventListener('touchstart', e => tx = e.changedTouches[0].clientX, {passive:true});
+addEventListener('touchend', e => {
+  const d = e.changedTouches[0].clientX - tx;
+  if (Math.abs(d) > 55) show(i + (d < 0 ? 1 : -1));
+}, {passive:true});
+
+// the hint is for the first few seconds only, then it gets out of the way
+const help = document.getElementById('help');
+let hideT = setTimeout(() => help.classList.add('hide'), 4000);
+addEventListener('mousemove', () => {
+  help.classList.remove('hide');
+  clearTimeout(hideT);
+  hideT = setTimeout(() => help.classList.add('hide'), 2500);
+});
+
+fit();
+show(Math.max(0, (parseInt((location.hash.match(/\d+/) || [1])[0], 10) || 1) - 1), false);
+</script>
+</body>
+</html>

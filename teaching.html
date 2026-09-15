@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>For instructors &mdash; AIMNet2 tutorial</title>
+<meta name="description" content="Run sheet, pre-session checklist, what to draw out of each exercise, and what goes wrong in a room.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<style>
+:root{
+  --red:#C41230;      /* Carnegie Red */
+  --iron:#6D6E71;     /* Iron Gray   */
+  --steel:#E0E0E0;    /* Steel Gray  */
+  --bg-soft:#F6F6F7;
+  --serif:"Source Serif 4","Source Serif Pro",Times,serif;
+  --sans:"Open Sans",Helvetica,Arial,sans-serif;
+  --mono:"Source Code Pro",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:74px}
+body{background:#fff;color:#000;font-family:var(--sans);line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+
+/* ---------------------------------------------------------------- nav */
+nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(6px);border-bottom:1px solid var(--steel)}
+nav .in{max-width:900px;margin:0 auto;padding:11px 24px;display:flex;
+  align-items:baseline;gap:22px;flex-wrap:wrap}
+nav .brand{font-family:var(--serif);font-weight:700;font-size:16px;
+  text-decoration:none;color:#000;margin-right:auto;white-space:nowrap}
+nav .brand span{color:var(--red)}
+nav a{font-size:14px;color:var(--iron);text-decoration:none;white-space:nowrap}
+nav a:hover{color:var(--red)}
+nav a.on{color:#000;font-weight:600;box-shadow:inset 0 -2px 0 var(--red)}
+
+.wrap{max-width:900px;margin:0 auto;padding:0 24px 96px}
+
+/* ------------------------------------------------------------ headings */
+h1{font-family:var(--serif);font-size:clamp(34px,5.5vw,50px);line-height:1.06;
+  font-weight:700;letter-spacing:-.018em;margin:48px 0 10px}
+.tag{font-size:19px;color:var(--iron);margin-bottom:22px}
+.rule{width:96px;height:5px;background:var(--red);margin:0 0 34px}
+h2{font-family:var(--serif);font-size:30px;line-height:1.2;font-weight:600;
+  letter-spacing:-.01em;margin:52px 0 6px;padding-top:6px}
+h2 + .lede{color:var(--iron);font-size:16.5px;margin-bottom:18px}
+h3{font-family:var(--sans);font-size:17px;font-weight:700;margin:30px 0 8px;
+  letter-spacing:-.005em}
+h4{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--red);margin:34px 0 12px}
+p{font-size:16.5px;margin:0 0 14px}
+a{color:#000;text-decoration-color:var(--steel);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--red)}
+strong{font-weight:700}
+
+ul,ol{margin:0 0 16px;padding-left:0;list-style:none}
+ul li{position:relative;padding-left:22px;margin-bottom:7px;font-size:16.5px}
+ul li::before{content:"";position:absolute;left:0;top:.66em;width:7px;height:7px;
+  background:var(--red)}
+ol{counter-reset:n}
+ol li{counter-increment:n;position:relative;padding-left:30px;margin-bottom:9px;
+  font-size:16.5px}
+ol li::before{content:counter(n);position:absolute;left:0;top:0;
+  font-family:var(--mono);font-size:13px;color:var(--red);font-weight:600}
+
+/* --------------------------------------------------------------- code */
+code{font-family:var(--mono);font-size:.88em;background:var(--bg-soft);
+  padding:1px 6px;word-break:break-word}
+pre{background:var(--bg-soft);border-left:4px solid var(--red);
+  padding:15px 18px;overflow-x:auto;margin:0 0 16px;position:relative}
+pre code{background:none;padding:0;font-size:13.5px;line-height:1.62;
+  display:block;white-space:pre;word-break:normal}
+pre .c{color:var(--iron)}
+kbd{font-family:var(--mono);font-size:.82em;border:1px solid var(--steel);
+  border-bottom-width:2px;border-radius:3px;padding:1px 5px;background:#fff}
+
+/* -------------------------------------------------------------- tables */
+.tw{overflow-x:auto;margin:0 0 18px}
+table{border-collapse:collapse;width:100%;font-size:15.5px}
+th{text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--iron);padding:0 14px 8px 0;
+  border-bottom:2px solid #000;white-space:nowrap}
+th.asis{text-transform:none;letter-spacing:.02em;font-size:14px}
+td{padding:9px 14px 9px 0;border-bottom:1px solid var(--steel);
+  vertical-align:top;line-height:1.45}
+td:first-child{font-weight:600}
+td:first-child code{white-space:nowrap}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.yes{color:#1a7f37;font-weight:700}
+.no{color:var(--red);font-weight:700}
+
+/* ------------------------------------------------------------ callouts */
+.note{border-left:4px solid var(--red);padding:2px 0 2px 20px;margin:0 0 20px}
+.note .k{font-size:12.5px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--red);margin-bottom:5px}
+.note p:last-child{margin-bottom:0}
+.note.grey{border-left-color:var(--iron)}
+.note.grey .k{color:var(--iron)}
+
+/* ------------------------------------------------------------- big link */
+.big{display:block;border:1px solid var(--steel);border-left:5px solid var(--red);
+  padding:16px 20px;text-decoration:none;margin-bottom:10px}
+.big:hover{border-color:var(--red)}
+.big .t{font-family:var(--serif);font-size:21px;font-weight:700;display:block}
+.big .d{font-size:15px;color:var(--iron);margin-top:2px;display:block}
+
+/* --------------------------------------------------------------- tabs */
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--steel);margin:0 0 20px;
+  flex-wrap:wrap}
+.tabs button{font-family:var(--sans);font-size:14.5px;font-weight:600;
+  background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;
+  padding:9px 15px;cursor:pointer;color:var(--iron)}
+.tabs button[aria-selected="true"]{color:#000;border-bottom-color:var(--red)}
+.panel[hidden]{display:none}
+
+/* ------------------------------------------------------------ notebooks */
+ol.nb{counter-reset:n -1}
+ol.nb li{counter-increment:n;display:grid;
+  grid-template-columns:28px minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;
+  padding:11px 0;border-bottom:1px solid var(--steel);margin:0}
+ol.nb li::before{content:counter(n);position:static;font-family:var(--mono);
+  font-size:13px;color:var(--red);font-weight:600}
+ol.nb .nm{font-size:16.5px}
+ol.nb .why{grid-column:2;font-size:14.5px;color:var(--iron);line-height:1.45}
+ol.nb a.cl{font-size:12px;font-family:var(--mono);color:var(--iron);
+  white-space:nowrap;letter-spacing:.02em}
+.ex{font-weight:700}
+.ex::after{content:"exercise";font-family:var(--sans);font-size:10px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--red);
+  padding:2px 7px;margin-left:9px;vertical-align:2px}
+
+footer{border-top:1px solid var(--steel);margin-top:60px;padding-top:22px;
+  font-size:14px;color:var(--iron)}
+footer a{color:var(--iron)}
+
+@media(max-width:600px){
+  .wrap{padding:0 16px 72px}
+  nav .in{padding:10px 16px;gap:14px}
+  nav .brand{width:100%;margin-bottom:2px}
+  ol.nb li{grid-template-columns:22px minmax(0,1fr)}
+  ol.nb a.cl{grid-column:2;grid-row:3}
+  h2{font-size:25px}
+}
+</style>
+</head>
+<body>
+<nav><div class="in">
+  <a class="brand" href="index.html">AIMNet2<span> · </span>tutorial</a>
+  <a href="index.html">Overview</a><a href="install.html">Install</a><a href="notebooks.html">Notebooks</a><a href="troubleshooting.html">Troubleshooting</a><a href="teaching.html" class="on">For instructors</a><a href="slides/">Slides</a>
+</div></nav>
+<div class="wrap">
+
+<h1>For instructors</h1>
+<p class="tag">Running this as a ninety-minute session.</p>
+<div class="rule"></div>
+
+<h2>Run sheet</h2>
+<div class="tw"><table>
+<tr><th>From</th><th>Min</th><th>Notebook</th><th>Mode</th><th>What it has to land</th></tr>
+<tr><td class="num">0:00</td><td class="num">5</td><td>0 Orientation</td><td>together</td>
+    <td>Everyone's first cell runs. Everything else follows from one function.</td></tr>
+<tr><td class="num">0:05</td><td class="num">10</td><td>1 Energy</td><td>demo</td>
+    <td>Charge is an input. The glycine zwitterion collapses.</td></tr>
+<tr><td class="num">0:15</td><td class="num">8</td><td>2 Geometry</td><td>demo</td>
+    <td>Water to within 0.01 &#197; and 0.5&deg;. An optimisation finds the <em>nearest</em> minimum.</td></tr>
+<tr><td class="num">0:23</td><td class="num">13</td><td>3 Conformers</td><td><strong>exercise 1</strong></td>
+    <td>A molecule at 298 K is a population, not a structure.</td></tr>
+<tr><td class="num">0:36</td><td class="num">8</td><td>4 Dynamics</td><td>demo</td>
+    <td>Sampling, not speed, is the hard part of MD.</td></tr>
+<tr><td class="num">0:44</td><td class="num">10</td><td>5 Reactions</td><td>demo</td>
+    <td>Exactly one imaginary mode, and what it is.</td></tr>
+<tr><td class="num">0:54</td><td class="num">13</td><td>6 Infrared</td><td><strong>exercise 2</strong></td>
+    <td>The same Hessian, at a minimum instead of a saddle, is a spectrum.</td></tr>
+<tr><td class="num">1:07</td><td class="num">13</td><td>7 Reactivity</td><td><strong>exercise 3</strong></td>
+    <td>Where a molecule reacts, without a transition state.</td></tr>
+<tr><td class="num">1:20</td><td class="num">5</td><td>8 Further directions</td><td>together</td>
+    <td>Where to go next, and what this cannot do.</td></tr>
+</table></div>
+<p>That totals eighty-five minutes and leaves five for the room. If you are running
+short, notebook 4 is the one to cut: it is the only demo nothing later depends on.</p>
+
+<h2>Before the session</h2>
+<ul>
+  <li><strong>Warm the model cache on your own machine.</strong> See
+      <a href="install.html#offline">the install page</a>. Thirty people downloading
+      36&nbsp;MB each over lecture-theatre wifi is the most likely way to lose the
+      first fifteen minutes.</li>
+  <li><strong>Send the install page out a week ahead</strong> and say plainly that
+      Colab is fine and an Intel Mac will not work locally.</li>
+  <li><strong>Run <code>python check_notebooks.py</code></strong> in the repository.
+      It takes under a second and confirms the exercises still have their blanks and
+      the answer keys do not.</li>
+  <li><strong>Decide how seats are numbered</strong> and be able to say it in one
+      sentence. Row-major from the front left, modulo eight, works.</li>
+  <li><strong>Open the three answer keys</strong> in <code>solutions/</code> on your
+      own screen. Each one has a table of the expected result for all eight seats.</li>
+</ul>
+
+<h2>The exercises</h2>
+<p class="lede">Each hands out eight systems by seat number, so neighbours cannot copy
+and the room can pool results into one table at the end. That pooling is the point:
+no individual seat sees the pattern.</p>
+
+<h3>Exercise 1, conformers</h3>
+<p>Put <strong>seat 5, 1,4-butanediol</strong> on the screen when the room reports
+back. Exactly one of its twenty-odd conformers folds far enough to close the
+O&ndash;H&middot;&middot;&middot;O bond; that one is the global minimum and holds about
+a third of the population, and every other conformer leaves the oxygens more than
+4.6&nbsp;&#197; apart. Seats 0 and 4, butane and 1,2-dichloroethane, should compare
+their numbers directly: the same question, different substituent, larger gap for
+chlorine.</p>
+
+<h3>Exercise 2, infrared</h3>
+<p><strong>Read the answer key before the session.</strong> For five of the eight
+molecules the strongest band is not the functional-group band a chemist would name
+first. Acetone's C=O and acetonitrile's C&equiv;N are both present at sensible
+positions, but a methyl deformation carries more intensity. Seats 3 and 4 will think
+they have made a mistake. They have not, and the reason (intensity is
+&part;&mu;/&part;Q, not chemical importance) is the most useful thing in the
+exercise.</p>
+
+<h3>Exercise 3, reactivity</h3>
+<p><strong>Seat 7, nitrobenzene, is the instructive failure</strong> and should be
+handled deliberately rather than apologised for. The descriptor puts meta above ortho,
+capturing part of the deactivation, but ranks para highest where experiment gives 93
+percent meta. Say why: condensed Fukui functions describe the ground-state density,
+whereas regioselectivity is set by the relative energies of the
+<em>&sigma;</em>-complex intermediates. For activated rings the two correlate; for
+deactivated rings they need not.</p>
+<p>Also warn the room not to read the <em>&omega;</em> column as a single ranking
+across all eight seats. Seats 4 to 6 are activated arenes with lower
+<em>&omega;</em> than acetone, which is correct: they are nucleophiles.</p>
+
+<h2>What goes wrong in a room</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Say</th></tr>
+<tr><td>Nothing happens for a minute</td><td>first cell installing</td>
+    <td>Expected. It prints nothing while it works.</td></tr>
+<tr><td>Everything is slow on Colab</td><td>CPU runtime</td>
+    <td>Runtime &rarr; Change runtime type &rarr; T4 GPU, then restart.</td></tr>
+<tr><td>"My conformer count is different"</td><td>stochastic search</td>
+    <td>Expected. Compare the ordering and the gaps, not the count.</td></tr>
+<tr><td>"Nothing converged"</td><td><code>fmax</code> tightened</td>
+    <td>0.02 eV/&#197; is the floor for a float32 model.</td></tr>
+<tr><td>An <code>AssertionError</code> about a complete answer</td><td>the blank</td>
+    <td>That is the exercise. Write two sentences and re-run.</td></tr>
+<tr><td>A red CUDA warning at import</td><td>no NVIDIA card</td>
+    <td>Harmless. It runs on the CPU.</td></tr>
+</table></div>
+
+<h2>Reusing the material</h2>
+<p>Everything is MIT licensed. The notebooks are generated from percent-format
+sources in <code>source/</code>, so if you would rather edit Python than JSON:</p>
+<pre><code>python build.py            <span class="c"># sources -&gt; notebooks/ and solutions/</span>
+python check_notebooks.py  <span class="c"># static check</span></code></pre>
+<p>An answer notebook is its exercise with the answer-key markdown from
+<code>keys/</code> prepended and the two blanks filled. Nothing else may differ, so a
+correction to an exercise reaches its answer key automatically.</p>
+<p>The deck is a single self-contained HTML file in <code>slides/</code>. It works
+offline from a local file, which is worth knowing when the conference network fails.
+Press <kbd>P</kbd> to print it to PDF.</p>
+
+<footer>
+Olexandr Isayev, Carnegie Mellon University. AiMat Summer School 2026,
+<em>Machine Learning for Molecules</em>. Materials MIT licensed.<br>
+AIMNet2: Anstine, Zubatyuk and Isayev, <em>Chem. Sci.</em> <strong>2025</strong>, <em>16</em>, 10228.
+AIMNet2-NSE: Kalita et al., <em>Angew. Chem. Int. Ed.</em> <strong>2026</strong>, e202516763.
+</footer>
+</div>
+
+</body>
+</html>

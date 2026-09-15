@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Troubleshooting &mdash; AIMNet2 tutorial</title>
+<meta name="description" content="Install and runtime problems in the AIMNet2 tutorial, and what to do about them.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<style>
+:root{
+  --red:#C41230;      /* Carnegie Red */
+  --iron:#6D6E71;     /* Iron Gray   */
+  --steel:#E0E0E0;    /* Steel Gray  */
+  --bg-soft:#F6F6F7;
+  --serif:"Source Serif 4","Source Serif Pro",Times,serif;
+  --sans:"Open Sans",Helvetica,Arial,sans-serif;
+  --mono:"Source Code Pro",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:74px}
+body{background:#fff;color:#000;font-family:var(--sans);line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+
+/* ---------------------------------------------------------------- nav */
+nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(6px);border-bottom:1px solid var(--steel)}
+nav .in{max-width:900px;margin:0 auto;padding:11px 24px;display:flex;
+  align-items:baseline;gap:22px;flex-wrap:wrap}
+nav .brand{font-family:var(--serif);font-weight:700;font-size:16px;
+  text-decoration:none;color:#000;margin-right:auto;white-space:nowrap}
+nav .brand span{color:var(--red)}
+nav a{font-size:14px;color:var(--iron);text-decoration:none;white-space:nowrap}
+nav a:hover{color:var(--red)}
+nav a.on{color:#000;font-weight:600;box-shadow:inset 0 -2px 0 var(--red)}
+
+.wrap{max-width:900px;margin:0 auto;padding:0 24px 96px}
+
+/* ------------------------------------------------------------ headings */
+h1{font-family:var(--serif);font-size:clamp(34px,5.5vw,50px);line-height:1.06;
+  font-weight:700;letter-spacing:-.018em;margin:48px 0 10px}
+.tag{font-size:19px;color:var(--iron);margin-bottom:22px}
+.rule{width:96px;height:5px;background:var(--red);margin:0 0 34px}
+h2{font-family:var(--serif);font-size:30px;line-height:1.2;font-weight:600;
+  letter-spacing:-.01em;margin:52px 0 6px;padding-top:6px}
+h2 + .lede{color:var(--iron);font-size:16.5px;margin-bottom:18px}
+h3{font-family:var(--sans);font-size:17px;font-weight:700;margin:30px 0 8px;
+  letter-spacing:-.005em}
+h4{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--red);margin:34px 0 12px}
+p{font-size:16.5px;margin:0 0 14px}
+a{color:#000;text-decoration-color:var(--steel);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--red)}
+strong{font-weight:700}
+
+ul,ol{margin:0 0 16px;padding-left:0;list-style:none}
+ul li{position:relative;padding-left:22px;margin-bottom:7px;font-size:16.5px}
+ul li::before{content:"";position:absolute;left:0;top:.66em;width:7px;height:7px;
+  background:var(--red)}
+ol{counter-reset:n}
+ol li{counter-increment:n;position:relative;padding-left:30px;margin-bottom:9px;
+  font-size:16.5px}
+ol li::before{content:counter(n);position:absolute;left:0;top:0;
+  font-family:var(--mono);font-size:13px;color:var(--red);font-weight:600}
+
+/* --------------------------------------------------------------- code */
+code{font-family:var(--mono);font-size:.88em;background:var(--bg-soft);
+  padding:1px 6px;word-break:break-word}
+pre{background:var(--bg-soft);border-left:4px solid var(--red);
+  padding:15px 18px;overflow-x:auto;margin:0 0 16px;position:relative}
+pre code{background:none;padding:0;font-size:13.5px;line-height:1.62;
+  display:block;white-space:pre;word-break:normal}
+pre .c{color:var(--iron)}
+kbd{font-family:var(--mono);font-size:.82em;border:1px solid var(--steel);
+  border-bottom-width:2px;border-radius:3px;padding:1px 5px;background:#fff}
+
+/* -------------------------------------------------------------- tables */
+.tw{overflow-x:auto;margin:0 0 18px}
+table{border-collapse:collapse;width:100%;font-size:15.5px}
+th{text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--iron);padding:0 14px 8px 0;
+  border-bottom:2px solid #000;white-space:nowrap}
+th.asis{text-transform:none;letter-spacing:.02em;font-size:14px}
+td{padding:9px 14px 9px 0;border-bottom:1px solid var(--steel);
+  vertical-align:top;line-height:1.45}
+td:first-child{font-weight:600}
+td:first-child code{white-space:nowrap}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.yes{color:#1a7f37;font-weight:700}
+.no{color:var(--red);font-weight:700}
+
+/* ------------------------------------------------------------ callouts */
+.note{border-left:4px solid var(--red);padding:2px 0 2px 20px;margin:0 0 20px}
+.note .k{font-size:12.5px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--red);margin-bottom:5px}
+.note p:last-child{margin-bottom:0}
+.note.grey{border-left-color:var(--iron)}
+.note.grey .k{color:var(--iron)}
+
+/* ------------------------------------------------------------- big link */
+.big{display:block;border:1px solid var(--steel);border-left:5px solid var(--red);
+  padding:16px 20px;text-decoration:none;margin-bottom:10px}
+.big:hover{border-color:var(--red)}
+.big .t{font-family:var(--serif);font-size:21px;font-weight:700;display:block}
+.big .d{font-size:15px;color:var(--iron);margin-top:2px;display:block}
+
+/* --------------------------------------------------------------- tabs */
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--steel);margin:0 0 20px;
+  flex-wrap:wrap}
+.tabs button{font-family:var(--sans);font-size:14.5px;font-weight:600;
+  background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;
+  padding:9px 15px;cursor:pointer;color:var(--iron)}
+.tabs button[aria-selected="true"]{color:#000;border-bottom-color:var(--red)}
+.panel[hidden]{display:none}
+
+/* ------------------------------------------------------------ notebooks */
+ol.nb{counter-reset:n -1}
+ol.nb li{counter-increment:n;display:grid;
+  grid-template-columns:28px minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;
+  padding:11px 0;border-bottom:1px solid var(--steel);margin:0}
+ol.nb li::before{content:counter(n);position:static;font-family:var(--mono);
+  font-size:13px;color:var(--red);font-weight:600}
+ol.nb .nm{font-size:16.5px}
+ol.nb .why{grid-column:2;font-size:14.5px;color:var(--iron);line-height:1.45}
+ol.nb a.cl{font-size:12px;font-family:var(--mono);color:var(--iron);
+  white-space:nowrap;letter-spacing:.02em}
+.ex{font-weight:700}
+.ex::after{content:"exercise";font-family:var(--sans);font-size:10px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--red);
+  padding:2px 7px;margin-left:9px;vertical-align:2px}
+
+footer{border-top:1px solid var(--steel);margin-top:60px;padding-top:22px;
+  font-size:14px;color:var(--iron)}
+footer a{color:var(--iron)}
+
+@media(max-width:600px){
+  .wrap{padding:0 16px 72px}
+  nav .in{padding:10px 16px;gap:14px}
+  nav .brand{width:100%;margin-bottom:2px}
+  ol.nb li{grid-template-columns:22px minmax(0,1fr)}
+  ol.nb a.cl{grid-column:2;grid-row:3}
+  h2{font-size:25px}
+}
+</style>
+</head>
+<body>
+<nav><div class="in">
+  <a class="brand" href="index.html">AIMNet2<span> · </span>tutorial</a>
+  <a href="index.html">Overview</a><a href="install.html">Install</a><a href="notebooks.html">Notebooks</a><a href="troubleshooting.html" class="on">Troubleshooting</a><a href="teaching.html">For instructors</a><a href="slides/">Slides</a>
+</div></nav>
+<div class="wrap">
+
+<h1>Troubleshooting</h1>
+<p class="tag">Everything below has actually happened to somebody.</p>
+<div class="rule"></div>
+
+<h2>Installing</h2>
+
+<h3><code>ERROR: Could not find a version that satisfies the requirement aimnet</code></h3>
+<p>Almost always Python 3.10 or older. AIMNet2 requires 3.11 or later, and pip reports
+that as "no matching distribution" rather than saying so. Check with:</p>
+<pre><code>python -c "import sys; print(sys.version)"</code></pre>
+<p>If that prints 3.10 or lower, make a new environment with a newer interpreter. On
+macOS <code>brew install python@3.12</code>; on Windows install 3.12 from python.org
+and use <code>py -3.12 -m venv .venv</code>; on Linux use your distribution's
+<code>python3.12</code> package or <code>pyenv</code>.</p>
+
+<h3>The same error on an Intel Mac</h3>
+<p>It will not install, and the problem is not fixable locally. AIMNet2 needs PyTorch
+2.8 or later and PyTorch stopped publishing Intel-Mac builds after 2.2. Use
+<a href="install.html#colab">Colab</a>.</p>
+
+<h3><code>pip install</code> downloads gigabytes and then fails on disk space</h3>
+<p>PyTorch is about 3&nbsp;GB installed, more during the install while the wheel is
+still cached. Free up 6&nbsp;GB, or point pip's cache elsewhere with
+<code>PIP_CACHE_DIR</code>, or install with <code>--no-cache-dir</code>.</p>
+
+<h3>PowerShell: <em>running scripts is disabled on this system</em></h3>
+<p>Windows blocks local scripts, including the one that activates a virtual
+environment. Allow them for your own account:</p>
+<pre><code>Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned</code></pre>
+<p>Then activate again. This does not require an administrator and does not allow
+scripts downloaded from the internet.</p>
+
+<h3><code>Warp CUDA warning: Could not find or load the NVIDIA CUDA driver</code></h3>
+<p>Harmless. One of AIMNet2's dependencies looks for a GPU at import time and says so
+when it does not find one. Everything runs on the CPU. You will see this on every
+Mac and on any machine without an NVIDIA card.</p>
+
+<h2>Running</h2>
+
+<h3>The first cell sits there doing nothing</h3>
+<p>Expected, for about a minute. It is installing packages and downloading roughly
+36&nbsp;MB of model parameters, and neither step prints progress. If it is still
+going after five minutes the network is the problem; see
+<a href="install.html#offline">warming the cache</a>.</p>
+
+<h3><code>RuntimeError</code> or <code>KeyError</code> mentioning an element</h3>
+<p>The molecule contains an element the model was not trained on. The fourteen
+supported elements are H, B, C, N, O, F, Si, P, S, Cl, As, Se, Br and I. There are no
+metals except palladium, in <code>aimnet2-pd</code> only.</p>
+
+<h3><code>ValueError</code> about charge or multiplicity</h3>
+<p>You asked a closed-shell model for an open-shell system. Ions and radicals need
+<code>aimnet2-nse</code>; <code>aimnet2-rxn</code> refuses any net charge at all. A
+cation or anion of a closed-shell molecule is a doublet, so <code>mult = 2</code>.</p>
+
+<h3>An optimisation runs forever, or hits the step limit</h3>
+<p>Check that you have not tightened <code>fmax</code>. AIMNet2 is a float32 model and
+0.02 eV/&#197; is the right convergence threshold; the <code>1e-4</code> you would use
+with a DFT code is below the numerical noise floor and will never be reached.</p>
+<p>Tightening costs a great deal and buys nothing you are going to use. Ibuprofen
+reaches 0.02 eV/&#197; in 26 L-BFGS steps and 0.01 in 154, six times the work. The
+<em>relative</em> energies that conformational analysis depends on do not move:
+butane's anti&ndash;gauche gap is 0.33 kcal/mol at <code>fmax</code>&nbsp;=&nbsp;0.02
+and 0.31 at 0.005, and its Boltzmann population changes by half a percentage point.
+For ethylene glycol the first three gaps agree to better than 0.01 kcal/mol.</p>
+
+<h3>My conformer count differs from the answer key</h3>
+<p>Expected for the flexible systems. Conformer generation is stochastic, so the exact
+number varies between runs and between machines. The energy <em>ordering</em> and the
+size of the gaps are the reproducible quantities, and are what the exercise asks
+for.</p>
+
+<h3>The dynamics notebook gives a different temperature each time</h3>
+<p>Also expected, and it is one of the points of that notebook. A few hundred
+femtoseconds of a fifteen-atom molecule does not determine a mean temperature to
+better than tens of kelvin. Read the spread, not the mean.</p>
+
+<h3>An exercise cell raises <code>AssertionError: Please write a complete answer</code></h3>
+<p>That is the blank you are meant to fill in. Replace the empty string with your
+answer in complete sentences and run the cell again.</p>
+
+<h3>I get an imaginary frequency at a structure that should be a minimum</h3>
+<p>The geometry is not converged. Re-run the optimisation, and if it still happens,
+loosen nothing: a genuine imaginary mode at a supposed minimum means the optimiser
+stopped on a saddle point, so nudge the structure and optimise again.</p>
+
+<h2>Colab</h2>
+
+<h3>Everything is slow</h3>
+<p>You are probably on a CPU runtime. <strong>Runtime &rarr; Change runtime type &rarr;
+T4 GPU</strong>, then <strong>Runtime &rarr; Restart session</strong> and run from the
+top. Check which you have with:</p>
+<pre><code>import torch; print(torch.cuda.is_available())</code></pre>
+
+<h3>My session disconnected and I lost everything</h3>
+<p>Colab reclaims idle runtimes. Re-run from the first cell; nothing is carried
+between notebooks anyway, so you only lose the notebook you were in. Save your own
+copy with <strong>File &rarr; Save a copy in Drive</strong> if you want to keep your
+answers.</p>
+
+<h3>"You cannot currently connect to a GPU backend"</h3>
+<p>The free tier has quotas. Either wait, or use a CPU runtime and accept that the
+exercises take five to twenty times longer. The notebooks detect the absence of a GPU
+and shrink the dynamics runs automatically.</p>
+
+<h2>Still stuck</h2>
+<p>Open an issue at <a href="https://github.com/isayevlab/ml4mol2026-aimnet2/issues">isayevlab/ml4mol2026-aimnet2</a>,
+including the output of:</p>
+<pre><code>python -c "
+import sys, platform, torch, aimnet
+print(sys.version)
+print(platform.platform(), platform.machine())
+print('torch', torch.__version__, 'cuda', torch.cuda.is_available())
+import importlib.metadata as m; print('aimnet', m.version('aimnet'))
+"</code></pre>
+
+<footer>
+Olexandr Isayev, Carnegie Mellon University. AiMat Summer School 2026,
+<em>Machine Learning for Molecules</em>. Materials MIT licensed.<br>
+AIMNet2: Anstine, Zubatyuk and Isayev, <em>Chem. Sci.</em> <strong>2025</strong>, <em>16</em>, 10228.
+AIMNet2-NSE: Kalita et al., <em>Angew. Chem. Int. Ed.</em> <strong>2026</strong>, e202516763.
+</footer>
+</div>
+
+</body>
+</html>

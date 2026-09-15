@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Install &mdash; AIMNet2 tutorial</title>
+<meta name="description" content="How to run the AIMNet2 tutorial: Google Colab, or a local install on macOS, Windows or Linux.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<style>
+:root{
+  --red:#C41230;      /* Carnegie Red */
+  --iron:#6D6E71;     /* Iron Gray   */
+  --steel:#E0E0E0;    /* Steel Gray  */
+  --bg-soft:#F6F6F7;
+  --serif:"Source Serif 4","Source Serif Pro",Times,serif;
+  --sans:"Open Sans",Helvetica,Arial,sans-serif;
+  --mono:"Source Code Pro",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:74px}
+body{background:#fff;color:#000;font-family:var(--sans);line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+
+/* ---------------------------------------------------------------- nav */
+nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(6px);border-bottom:1px solid var(--steel)}
+nav .in{max-width:900px;margin:0 auto;padding:11px 24px;display:flex;
+  align-items:baseline;gap:22px;flex-wrap:wrap}
+nav .brand{font-family:var(--serif);font-weight:700;font-size:16px;
+  text-decoration:none;color:#000;margin-right:auto;white-space:nowrap}
+nav .brand span{color:var(--red)}
+nav a{font-size:14px;color:var(--iron);text-decoration:none;white-space:nowrap}
+nav a:hover{color:var(--red)}
+nav a.on{color:#000;font-weight:600;box-shadow:inset 0 -2px 0 var(--red)}
+
+.wrap{max-width:900px;margin:0 auto;padding:0 24px 96px}
+
+/* ------------------------------------------------------------ headings */
+h1{font-family:var(--serif);font-size:clamp(34px,5.5vw,50px);line-height:1.06;
+  font-weight:700;letter-spacing:-.018em;margin:48px 0 10px}
+.tag{font-size:19px;color:var(--iron);margin-bottom:22px}
+.rule{width:96px;height:5px;background:var(--red);margin:0 0 34px}
+h2{font-family:var(--serif);font-size:30px;line-height:1.2;font-weight:600;
+  letter-spacing:-.01em;margin:52px 0 6px;padding-top:6px}
+h2 + .lede{color:var(--iron);font-size:16.5px;margin-bottom:18px}
+h3{font-family:var(--sans);font-size:17px;font-weight:700;margin:30px 0 8px;
+  letter-spacing:-.005em}
+h4{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--red);margin:34px 0 12px}
+p{font-size:16.5px;margin:0 0 14px}
+a{color:#000;text-decoration-color:var(--steel);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--red)}
+strong{font-weight:700}
+
+ul,ol{margin:0 0 16px;padding-left:0;list-style:none}
+ul li{position:relative;padding-left:22px;margin-bottom:7px;font-size:16.5px}
+ul li::before{content:"";position:absolute;left:0;top:.66em;width:7px;height:7px;
+  background:var(--red)}
+ol{counter-reset:n}
+ol li{counter-increment:n;position:relative;padding-left:30px;margin-bottom:9px;
+  font-size:16.5px}
+ol li::before{content:counter(n);position:absolute;left:0;top:0;
+  font-family:var(--mono);font-size:13px;color:var(--red);font-weight:600}
+
+/* --------------------------------------------------------------- code */
+code{font-family:var(--mono);font-size:.88em;background:var(--bg-soft);
+  padding:1px 6px;word-break:break-word}
+pre{background:var(--bg-soft);border-left:4px solid var(--red);
+  padding:15px 18px;overflow-x:auto;margin:0 0 16px;position:relative}
+pre code{background:none;padding:0;font-size:13.5px;line-height:1.62;
+  display:block;white-space:pre;word-break:normal}
+pre .c{color:var(--iron)}
+kbd{font-family:var(--mono);font-size:.82em;border:1px solid var(--steel);
+  border-bottom-width:2px;border-radius:3px;padding:1px 5px;background:#fff}
+
+/* -------------------------------------------------------------- tables */
+.tw{overflow-x:auto;margin:0 0 18px}
+table{border-collapse:collapse;width:100%;font-size:15.5px}
+th{text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--iron);padding:0 14px 8px 0;
+  border-bottom:2px solid #000;white-space:nowrap}
+th.asis{text-transform:none;letter-spacing:.02em;font-size:14px}
+td{padding:9px 14px 9px 0;border-bottom:1px solid var(--steel);
+  vertical-align:top;line-height:1.45}
+td:first-child{font-weight:600}
+td:first-child code{white-space:nowrap}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.yes{color:#1a7f37;font-weight:700}
+.no{color:var(--red);font-weight:700}
+
+/* ------------------------------------------------------------ callouts */
+.note{border-left:4px solid var(--red);padding:2px 0 2px 20px;margin:0 0 20px}
+.note .k{font-size:12.5px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--red);margin-bottom:5px}
+.note p:last-child{margin-bottom:0}
+.note.grey{border-left-color:var(--iron)}
+.note.grey .k{color:var(--iron)}
+
+/* ------------------------------------------------------------- big link */
+.big{display:block;border:1px solid var(--steel);border-left:5px solid var(--red);
+  padding:16px 20px;text-decoration:none;margin-bottom:10px}
+.big:hover{border-color:var(--red)}
+.big .t{font-family:var(--serif);font-size:21px;font-weight:700;display:block}
+.big .d{font-size:15px;color:var(--iron);margin-top:2px;display:block}
+
+/* --------------------------------------------------------------- tabs */
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--steel);margin:0 0 20px;
+  flex-wrap:wrap}
+.tabs button{font-family:var(--sans);font-size:14.5px;font-weight:600;
+  background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;
+  padding:9px 15px;cursor:pointer;color:var(--iron)}
+.tabs button[aria-selected="true"]{color:#000;border-bottom-color:var(--red)}
+.panel[hidden]{display:none}
+
+/* ------------------------------------------------------------ notebooks */
+ol.nb{counter-reset:n -1}
+ol.nb li{counter-increment:n;display:grid;
+  grid-template-columns:28px minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;
+  padding:11px 0;border-bottom:1px solid var(--steel);margin:0}
+ol.nb li::before{content:counter(n);position:static;font-family:var(--mono);
+  font-size:13px;color:var(--red);font-weight:600}
+ol.nb .nm{font-size:16.5px}
+ol.nb .why{grid-column:2;font-size:14.5px;color:var(--iron);line-height:1.45}
+ol.nb a.cl{font-size:12px;font-family:var(--mono);color:var(--iron);
+  white-space:nowrap;letter-spacing:.02em}
+.ex{font-weight:700}
+.ex::after{content:"exercise";font-family:var(--sans);font-size:10px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--red);
+  padding:2px 7px;margin-left:9px;vertical-align:2px}
+
+footer{border-top:1px solid var(--steel);margin-top:60px;padding-top:22px;
+  font-size:14px;color:var(--iron)}
+footer a{color:var(--iron)}
+
+@media(max-width:600px){
+  .wrap{padding:0 16px 72px}
+  nav .in{padding:10px 16px;gap:14px}
+  nav .brand{width:100%;margin-bottom:2px}
+  ol.nb li{grid-template-columns:22px minmax(0,1fr)}
+  ol.nb a.cl{grid-column:2;grid-row:3}
+  h2{font-size:25px}
+}
+</style>
+</head>
+<body>
+<nav><div class="in">
+  <a class="brand" href="index.html">AIMNet2<span> · </span>tutorial</a>
+  <a href="index.html">Overview</a><a href="install.html" class="on">Install</a><a href="notebooks.html">Notebooks</a><a href="troubleshooting.html">Troubleshooting</a><a href="teaching.html">For instructors</a><a href="slides/">Slides</a>
+</div></nav>
+<div class="wrap">
+
+<h1>Getting set up</h1>
+<p class="tag">Two routes. Pick one before the session starts.</p>
+<div class="rule"></div>
+
+<div class="note">
+  <div class="k">If you are short of time</div>
+  <p>Use <a href="#colab">Google Colab</a>. It needs a browser and a Google
+  account, nothing else, and it gives you a free GPU. The local install is worth
+  doing if you want to keep using AIMNet2 afterwards, and it is the only way to
+  work offline.</p>
+</div>
+
+<h2 id="colab">Route 1: Google Colab</h2>
+<p class="lede">No install. Works on any machine with a browser, including an iPad.</p>
+<ol>
+  <li>Open a notebook from the <a href="notebooks.html">notebook list</a>, or from
+      the repository, by clicking its <strong>open in colab</strong> link.</li>
+  <li>In the Colab menu choose <strong>Runtime &rarr; Change runtime type</strong>
+      and select <strong>T4 GPU</strong>. Do this <em>before</em> running anything.
+      The free T4 makes the exercises roughly ten times faster.</li>
+  <li>Run the first cell. It installs the packages and downloads the model
+      parameters. This takes about a minute and prints nothing while it works, so
+      it will look stalled. It is not.</li>
+  <li>Run the rest of the cells in order.</li>
+</ol>
+<div class="note grey">
+  <div class="k">Two things to know about Colab</div>
+  <p><strong>Each notebook is a separate machine.</strong> Opening notebook 3 does
+  not inherit anything from notebook 2, so the first cell has to run again. That is
+  why every notebook is self-contained.</p>
+  <p><strong>Your edits are not saved</strong> unless you choose
+  <strong>File &rarr; Save a copy in Drive</strong>. Do that first if you want to
+  keep your answers.</p>
+</div>
+
+<h2 id="local">Route 2: a local install</h2>
+<p class="lede">About five minutes, plus a 3&nbsp;GB download for PyTorch.</p>
+
+<h3>Will it run on your machine?</h3>
+<div class="tw"><table>
+<tr><th>Platform</th><th>Supported</th><th>Compute</th><th>Notes</th></tr>
+<tr><td>Linux, x86-64</td><td class="yes">yes</td><td>NVIDIA GPU or CPU</td>
+    <td>A CUDA-enabled PyTorch is installed automatically. Nothing extra to do.</td></tr>
+<tr><td>Linux, ARM64</td><td class="yes">yes</td><td>CPU</td>
+    <td>Includes Raspberry Pi-class hardware and ARM cloud instances.</td></tr>
+<tr><td>Windows 10 / 11, x86-64</td><td class="yes">yes</td><td>NVIDIA GPU or CPU</td>
+    <td>The default PyTorch on Windows is CPU-only. See the GPU note below.</td></tr>
+<tr><td>macOS, Apple Silicon</td><td class="yes">yes</td><td>CPU</td>
+    <td>M1 and later. AIMNet2 does not use the Metal (MPS) backend, so everything
+        runs on the CPU cores. That is fine for this tutorial.</td></tr>
+<tr><td>macOS, Intel</td><td class="no">no</td><td>&mdash;</td>
+    <td>AIMNet2 needs PyTorch 2.8 or later, and PyTorch stopped publishing Intel-Mac
+        builds after version 2.2. Use Colab.</td></tr>
+</table></div>
+
+<h3>Python version</h3>
+<p>You need <strong>Python 3.11 or later</strong>. AIMNet2 declares
+<code>requires-python &gt;= 3.11</code> and will refuse to install on 3.10 or older.
+Check with <code>python3 --version</code> (macOS, Linux) or <code>py --version</code>
+(Windows).</p>
+
+<h3>Install</h3>
+<p>Pick your platform. Each block creates an isolated environment so nothing lands in
+your system Python.</p>
+
+<div class="tabs" data-tabs="install-os" role="tablist">
+  <button role="tab">macOS</button>
+  <button role="tab">Windows</button>
+  <button role="tab">Linux</button>
+  <button role="tab">conda</button>
+</div>
+
+<div class="panel">
+  <p>Terminal, on an Apple Silicon Mac. If you do not have Python 3.11+, install it
+  with <a href="https://brew.sh">Homebrew</a>: <code>brew install python@3.12</code>.</p>
+<pre><code><span class="c"># make a folder for the tutorial and a virtual environment inside it</span>
+mkdir ~/aimnet2-tutorial &amp;&amp; cd ~/aimnet2-tutorial
+python3 -m venv .venv
+source .venv/bin/activate
+
+<span class="c"># install (about 3 GB, mostly PyTorch)</span>
+pip install --upgrade pip
+pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
+
+<span class="c"># get the notebooks</span>
+git clone https://github.com/isayevlab/ml4mol2026-aimnet2.git
+cd ml4mol2026-aimnet2
+jupyter lab</code></pre>
+  <p>Next time you come back, <code>cd ~/aimnet2-tutorial</code> and
+  <code>source .venv/bin/activate</code> before <code>jupyter lab</code>.</p>
+</div>
+
+<div class="panel" hidden>
+  <p>PowerShell. Install Python from <a href="https://www.python.org/downloads/windows/">python.org</a>
+  or the Microsoft Store first, and tick <strong>Add python.exe to PATH</strong>.</p>
+<pre><code><span class="c"># make a folder for the tutorial and a virtual environment inside it</span>
+mkdir $HOME\aimnet2-tutorial; cd $HOME\aimnet2-tutorial
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+<span class="c"># install (about 3 GB, mostly PyTorch)</span>
+python -m pip install --upgrade pip
+pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
+
+<span class="c"># get the notebooks</span>
+git clone https://github.com/isayevlab/ml4mol2026-aimnet2.git
+cd ml4mol2026-aimnet2
+jupyter lab</code></pre>
+  <div class="note grey">
+    <div class="k">If PowerShell refuses to run the activation script</div>
+    <p>Windows blocks local scripts by default. Allow them for your account once:</p>
+    <pre><code>Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned</code></pre>
+    <p>then run <code>.\.venv\Scripts\Activate.ps1</code> again. In
+    <code>cmd.exe</code> instead of PowerShell the activation command is
+    <code>.venv\Scripts\activate.bat</code>.</p>
+  </div>
+  <div class="note grey">
+    <div class="k">For an NVIDIA GPU on Windows</div>
+    <p>The PyTorch published on PyPI for Windows is CPU-only; the CUDA build comes
+    from PyTorch's own index. Install it <em>before</em> AIMNet2:</p>
+    <pre><code>pip install torch --index-url https://download.pytorch.org/whl/cu128
+pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab</code></pre>
+    <p>Match <code>cu128</code> to your driver; the current options are listed at
+    <a href="https://pytorch.org/get-started/locally/">pytorch.org/get-started/locally</a>.
+    Without this everything still works, just on the CPU.</p>
+  </div>
+</div>
+
+<div class="panel" hidden>
+<pre><code><span class="c"># make a folder for the tutorial and a virtual environment inside it</span>
+mkdir ~/aimnet2-tutorial &amp;&amp; cd ~/aimnet2-tutorial
+python3 -m venv .venv
+source .venv/bin/activate
+
+<span class="c"># install (about 3 GB, and on x86-64 this pulls CUDA support too)</span>
+pip install --upgrade pip
+pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
+
+<span class="c"># get the notebooks</span>
+git clone https://github.com/isayevlab/ml4mol2026-aimnet2.git
+cd ml4mol2026-aimnet2
+jupyter lab</code></pre>
+  <p>On x86-64 Linux the PyPI PyTorch wheel bundles CUDA 12.8, so an NVIDIA GPU with
+  a recent driver is picked up with no extra steps. Confirm with:</p>
+  <pre><code>python -c "import torch; print(torch.cuda.is_available())"</code></pre>
+</div>
+
+<div class="panel" hidden>
+  <p>If you already use conda or mamba. Works the same on all three platforms.</p>
+<pre><code>conda create -n aimnet2 python=3.12 -y
+conda activate aimnet2
+
+pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
+
+git clone https://github.com/isayevlab/ml4mol2026-aimnet2.git
+cd ml4mol2026-aimnet2
+jupyter lab</code></pre>
+  <p>Install the packages with <code>pip</code> even inside conda. AIMNet2 is not on
+  conda-forge, and mixing the two channels for PyTorch causes more problems than it
+  solves.</p>
+</div>
+
+<h3 id="check">Check that it worked</h3>
+<p>Open <code>notebooks/0_orientation.ipynb</code> and run every cell. It ends with
+four checks and prints whether a GPU was found. Or, from a terminal:</p>
+<pre><code>python -c "from aimnet.calculators import AIMNet2Calculator as C; C('aimnet2'); print('AIMNet2 works')"</code></pre>
+<p>That one line works in bash, zsh and PowerShell alike. It prints a CUDA warning
+first on any machine without an NVIDIA card, which is expected.</p>
+
+<h2 id="offline">Before a conference: warm the cache</h2>
+<p class="lede">Do this at home, on a network you trust.</p>
+<p>Model parameters are downloaded the first time each model is used, not at install
+time, and they land in <code>~/.cache/aimnet</code>
+(<code>C:\Users\&lt;you&gt;\.cache\aimnet</code> on Windows). Each file is about
+9&nbsp;MB. The tutorial uses four of them. Fetching them in a lecture theatre on
+shared wifi, thirty people at once, is the single most likely way for the session to
+stall.</p>
+<p>Run this once beforehand and the notebooks will need no network at all:</p>
+<pre><code>python -c "
+from aimnet.calculators import AIMNet2Calculator
+for m in ('aimnet2', 'aimnet2-2025', 'aimnet2-nse', 'aimnet2-rxn'):
+    AIMNet2Calculator(m); print('cached', m)
+"</code></pre>
+<p>To keep the cache somewhere else, set <code>AIMNET_CACHE_DIR</code> before
+running Python.</p>
+
+<h2 id="which">Which model is which</h2>
+<p>Choosing a model is a chemical decision, not a performance one.</p>
+<div class="tw"><table>
+<tr><th>Name</th><th>Elements</th><th>Charge and spin</th><th>Use it for</th></tr>
+<tr><td><code>aimnet2</code></td><td>14</td><td>closed shell</td>
+    <td>the default; notebooks 0&ndash;4 and 6</td></tr>
+<tr><td><code>aimnet2-2025</code></td><td>14</td><td>closed shell</td>
+    <td>a second opinion at a different level of theory</td></tr>
+<tr><td><code>aimnet2-nse</code></td><td>14</td><td>any charge, any multiplicity</td>
+    <td>radicals and ions; notebooks 7 and 8</td></tr>
+<tr><td><code>aimnet2-rxn</code></td><td>H C N O</td><td>neutral only</td>
+    <td>transition states and reaction paths; notebook 5</td></tr>
+<tr><td><code>aimnet2-pd</code></td><td>14, plus Pd</td><td>closed shell</td>
+    <td>palladium. Not a gas-phase model: its energies are not comparable with any
+        other member's</td></tr>
+</table></div>
+<p>The fourteen elements are H, B, C, N, O, F, Si, P, S, Cl, As, Se, Br and I. There
+is no solvent in any of these models except <code>aimnet2-pd</code>.</p>
+
+<div class="note">
+  <div class="k">One naming trap</div>
+  <p>The package on PyPI is <strong><code>aimnet</code></strong>, not
+  <code>aimnet2</code> or <code>aimnet2calc</code>. The old
+  <code>isayevlab/AIMNet2</code> repository is deprecated, and any instructions that
+  begin by cloning it and running <code>setup.py install</code> are out of date.</p>
+</div>
+
+<footer>
+Olexandr Isayev, Carnegie Mellon University. AiMat Summer School 2026,
+<em>Machine Learning for Molecules</em>. Materials MIT licensed.<br>
+AIMNet2: Anstine, Zubatyuk and Isayev, <em>Chem. Sci.</em> <strong>2025</strong>, <em>16</em>, 10228.
+AIMNet2-NSE: Kalita et al., <em>Angew. Chem. Int. Ed.</em> <strong>2026</strong>, e202516763.
+</footer>
+</div>
+<script>
+document.querySelectorAll('[data-tabs]').forEach(group => {
+  const buttons = [...group.querySelectorAll('button')];
+  const panels  = [...group.parentElement.querySelectorAll('.panel')];
+  const show = i => {
+    buttons.forEach((b, k) => b.setAttribute('aria-selected', k === i));
+    panels.forEach((p, k) => p.hidden = k !== i);
+    try { localStorage.setItem(group.dataset.tabs, String(i)); } catch (e) {}
+  };
+  buttons.forEach((b, i) => b.addEventListener('click', () => show(i)));
+  let start = 0;
+  try {
+    const saved = localStorage.getItem(group.dataset.tabs);
+    if (saved !== null && buttons[+saved]) start = +saved;
+  } catch (e) {}
+  show(start);
+});
+</script>
+</body>
+</html>
