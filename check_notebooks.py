@@ -40,7 +40,7 @@ def check(folder, want_todo):
         return
     for path in paths:
         try:
-            nb = json.loads(path.read_text())
+            nb = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             fail(f"{path.name}: not valid JSON ({exc})")
             continue
@@ -85,7 +85,7 @@ html_pages = [p for p in ("index.html", "install.html", "notebooks.html",
               if (ROOT / p).exists()]
 targets = set(html_pages) | {"slides/"}
 for page in html_pages:
-    html = (ROOT / page).read_text()
+    html = (ROOT / page).read_text(encoding="utf-8")
     for href in re.findall(r'href="([^"#?]+)', html):
         if href.startswith(("http://", "https://", "mailto:")):
             continue
@@ -97,7 +97,7 @@ slides = ROOT / "slides" / "index.html"
 if not slides.exists():
     fail("slides/index.html is missing")
 else:
-    html = slides.read_text()
+    html = slides.read_text(encoding="utf-8")
     n = html.count('class="slide')
     print(f"\nslides/\n  ok    index.html{'':<32s} {n} slides  {len(html) // 1024} KB")
     # http://www.w3.org/2000/svg is an XML namespace, not a network load.

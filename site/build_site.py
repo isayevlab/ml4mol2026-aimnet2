@@ -42,7 +42,7 @@ def notebook_list():
 
 
 def write(name, html):
-    (OUT / name).write_text(html)
+    (OUT / name).write_text(html, encoding="utf-8")
     print(f"  {name}  {len(html) // 1024} KB")
 
 

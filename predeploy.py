@@ -35,7 +35,7 @@ for name in PAGES:
     check(page.exists(), f"{name} is missing")
     if not page.exists():
         continue
-    html = page.read_text()
+    html = page.read_text(encoding="utf-8")
     for href in re.findall(r'href="([^"#?]+)', html):
         if href.startswith(("http://", "https://", "mailto:")):
             continue
@@ -44,7 +44,7 @@ for name in PAGES:
 
 # 2. every Colab and blob link points at a notebook that exists
 for f in list(ROOT.glob("*.html")) + [ROOT / "README.md"]:
-    text = f.read_text()
+    text = f.read_text(encoding="utf-8")
     for url in re.findall(rf"(?:colab\.research\.google\.com/github/{REPO}|"
                           rf"github\.com/{REPO})/blob/main/(\S+?\.ipynb)", text):
         check((ROOT / url).exists(), f"{f.name}: link to missing {url}")
@@ -52,7 +52,7 @@ for f in list(ROOT.glob("*.html")) + [ROOT / "README.md"]:
 # 3. notebooks are valid JSON, carry no outputs, and keep their blanks
 for nb_path in sorted(ROOT.glob("*/*.ipynb")):
     try:
-        nb = json.loads(nb_path.read_text())
+        nb = json.loads(nb_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         bad.append(f"{nb_path}: invalid JSON ({exc})")
         continue
@@ -73,13 +73,13 @@ for f in [p for pat in ("*.py", "*.ipynb", "*.html", "*.md", "*.txt")
           for p in ROOT.rglob(pat)]:
     if f.name == "predeploy.py":
         continue                       # this file names the patterns it looks for
-    text = f.read_text(errors="ignore")
+    text = f.read_text(encoding="utf-8", errors="ignore")
     for leak in LEAKS:
         check(leak not in text, f"{f.relative_to(ROOT)}: contains local path {leak}")
 
 # 5. house style in notebook prose
 for nb_path in sorted((ROOT / "notebooks").glob("*.ipynb")):
-    nb = json.loads(nb_path.read_text())
+    nb = json.loads(nb_path.read_text(encoding="utf-8"))
     for i, cell in enumerate(nb["cells"]):
         if cell["cell_type"] != "markdown":
             continue
@@ -92,7 +92,7 @@ for nb_path in sorted((ROOT / "notebooks").glob("*.ipynb")):
 slides = ROOT / "slides" / "index.html"
 check(slides.exists(), "slides/index.html is missing")
 if slides.exists():
-    html = slides.read_text()
+    html = slides.read_text(encoding="utf-8")
     insecure = [u for u in re.findall(r'(?:src|href)="(http://[^"]+)"', html)
                 if not u.startswith("http://www.w3.org/")]
     check(not insecure, f"slides/index.html loads {insecure[:1]} over plain http")

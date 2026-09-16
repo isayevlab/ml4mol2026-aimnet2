@@ -96,8 +96,8 @@ def build_notebooks():
 def build_solutions():
     (ROOT / "solutions").mkdir(exist_ok=True)
     for name, spec in ANSWERS.items():
-        nb = json.loads((ROOT / "notebooks" / f"{name}.ipynb").read_text())
-        key = (ROOT / "keys" / f"{name}.md").read_text().rstrip("\n")
+        nb = json.loads((ROOT / "notebooks" / f"{name}.ipynb").read_text(encoding="utf-8"))
+        key = (ROOT / "keys" / f"{name}.md").read_text(encoding="utf-8").rstrip("\n")
 
         replaced_seat = replaced_answer = False
         for cell in nb["cells"]:
@@ -120,7 +120,7 @@ def build_solutions():
         nb["cells"].insert(0, {"cell_type": "markdown", "metadata": {},
                                "source": key.splitlines(keepends=True)})
         out = ROOT / "solutions" / f"{name}_ANSWERS.ipynb"
-        out.write_text(json.dumps(nb, indent=1, ensure_ascii=False) + "\n")
+        out.write_text(json.dumps(nb, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"  solutions/{name}_ANSWERS.ipynb")
 
 
