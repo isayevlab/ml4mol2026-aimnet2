@@ -1,6 +1,6 @@
 # Answer key — Exercise 1: Conformational analysis
 
-**Instructor and demonstrator copy.** Values obtained by running the student notebook unchanged: three ETKDG seeds, `fmax = 0.02`, model `aimnet2`, on a CPU. The flexible systems (seats 1, 2, 3, 5, 6, 7) depend on the random seeds, so conformer counts vary by a few between runs. The **energy ordering** and the **size of the gaps** are the reproducible quantities, and are what the exercise asks for.
+**Instructor and demonstrator copy.** Values obtained by running the student notebook unchanged: three ETKDG seeds, `fmax = 0.02`, model `aimnet2`, on a CPU. The seeds are fixed (42, 7, 1), but the notebook generates three times as many starting structures on a GPU as on a CPU, so GPU users find a few more conformers of the flexible systems (seats 1, 2, 3, 5, 6, 7) than this key lists. The **energy ordering** and the **size of the gaps** are the reproducible quantities, and are what the exercise asks for.
 
 ## Results by seat
 
@@ -13,13 +13,13 @@
 | 4 | 1,2-dichloroethane | 2 | ~1.0 | ~85% | anti lower, by more than in butane |
 | 5 | 1,4-butanediol | ~20 | 0.40 | 31% | **only the lowest conformer closes the O–H···O bond, at 2.22 Å; every other one is 4.6 Å or more** |
 | 6 | ibuprofen | ~13–18 | small | ~15% | no single structure describes the molecule |
-| 7 | alanine dipeptide | tens | — | ~77% | in the gas phase the extended beta / C5 basin near φ = −150° dominates |
+| 7 | alanine dipeptide | tens | — | ~77% | in the gas phase the extended C5 / β basin near φ = −150° and the C7eq basin (φ ≈ −80°, ψ ≈ +70°) dominate; the α-helical basin needs water |
 
 ## Points to draw out
 
 **Seats 0 and 4 should compare directly.** Butane and 1,2-dichloroethane pose the same question with different substituents. Both prefer anti; chlorine gives the larger gap.
 
-**Seat 5 is the best single result in this exercise.** 1,4-butanediol has five rotatable bonds, and exactly one of its twenty-odd conformers folds far enough to bring the two hydroxyls together. That conformer is the global minimum and holds about a third of the population; every other conformer leaves the oxygens more than 4.5 Å apart. The hydrogen bond is worth roughly 0.4 kcal/mol here, which is the whole reason the folded form wins. Put the seat 5 table on the screen.
+**Seat 5 is the best single result in this exercise.** 1,4-butanediol has five single bonds along its chain (RDKit's strict count, which the notebook prints, is three), and exactly one of its twenty-odd conformers folds far enough to bring the two hydroxyls together. That conformer is the global minimum and holds about a third of the population; every other conformer leaves the oxygens 4.6 Å or more apart. The hydrogen bond is worth roughly 0.4 kcal/mol here, which is the whole reason the folded form wins. Put the seat 5 table on the screen.
 
 **Seats 5 and 6 show the practical consequence.** Beyond about four rotatable bonds no single structure represents the molecule, and any property computed from one optimised geometry is unreliable.
 

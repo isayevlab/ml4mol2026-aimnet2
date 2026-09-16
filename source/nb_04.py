@@ -45,22 +45,31 @@
 # nothing for some time. This is expected.
 
 # %%
-import subprocess, sys, warnings
+import os, subprocess, sys, warnings
 warnings.filterwarnings("ignore")
+assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
+
+if sys.platform == "win32":
+    # torch.compile needs a C++ compiler, which Windows machines rarely have.
+    # Disabling it must happen before torch is imported.
+    os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 
 def _pip(*packages):
-    subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages], check=True)
+    r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages],
+                       capture_output=True, text=True)
+    if r.returncode:
+        print(r.stdout[-2000:]); print(r.stderr[-4000:])
+        raise RuntimeError("pip install failed; see the output above")
 
 try:
     import aimnet, rdkit, ase          # noqa: F401
 except ImportError:
-    _pip("aimnet[ase]", "rdkit")
+    _pip("aimnet[ase]", "rdkit", "warp-lang<1.18")
 import numpy as np
 import torch
 from aimnet.calculators import AIMNet2Calculator, AIMNet2ASE
 
 GPU = torch.cuda.is_available()
-assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
 print(f"Python {sys.version.split()[0]}   PyTorch {torch.__version__}   GPU available: {GPU}")
 
 _ = AIMNet2Calculator("aimnet2")          # downloads parameters on first use
@@ -102,10 +111,16 @@ def build(smiles, charge=None, mult=1, seed=42):
     atoms.info["mult"] = int(mult)
     return atoms
 
+_MODELS = {}
+
 def attach(atoms, model="aimnet2"):
     """Attach an AIMNet2 calculator to a structure, so that energies and
-    forces can be requested from it through the standard ASE interface."""
-    atoms.calc = AIMNet2ASE(AIMNet2Calculator(model),
+    forces can be requested from it through the standard ASE interface.
+    Loading a model is the slow step, so each model is loaded once and
+    shared by every structure that uses it."""
+    if model not in _MODELS:
+        _MODELS[model] = AIMNet2Calculator(model)
+    atoms.calc = AIMNet2ASE(_MODELS[model],
                             charge=atoms.info.get("charge", 0),
                             mult=atoms.info.get("mult", 1))
     return atoms
@@ -158,7 +173,7 @@ print(f"H...O hydrogen bond   {molecule.get_distance(h_donor, o_acceptor):.3f} A
 # > adjusting to the thermostat. Averages taken over it are meaningless, so it is
 # > discarded. Here the thermostat couples on a timescale of 1/friction = 100 fs,
 # > and the first 100 fs are discarded here (200 fs on a GPU, where the run is
-> longer).
+# > longer).
 #
 # The timestep is **0.25 fs**, not the 0.5 fs often quoted for systems containing
 # hydrogen. That choice was made by measurement, not by convention. Asking this
@@ -192,9 +207,12 @@ trace = {}
 print(f"{N_EQ} equilibration steps then {N_STEPS} sampled, "
       f"{DT} fs each: {N_STEPS * DT:.0f} fs of sampled trajectory per temperature\n")
 
+# compiled once here, on a GPU, and shared by both temperatures
+base = AIMNet2Calculator("aimnet2", compile_model=GPU)
+
 for T in (300, 500):
     a = molecule.copy(); a.info.update(charge=0, mult=1)
-    a.calc = AIMNet2ASE(AIMNet2Calculator("aimnet2", compile_model=GPU), charge=0, mult=1)
+    a.calc = AIMNet2ASE(base, charge=0, mult=1)
 
     # initial velocities drawn from the Maxwell-Boltzmann distribution at T
     MaxwellBoltzmannDistribution(a, temperature_K=T, force_temp=True)
@@ -278,9 +296,9 @@ ax.legend(frameon=False); fig.tight_layout(); plt.show()
 #
 # > **Definition — NVE dynamics.**
 # > Dynamics at constant particle number, volume and total energy. With no
-# > thermostat, the sum of kinetic and potential energy must be conserved. Any
-# > systematic drift indicates that the forces are not the exact gradient of the
-# > energy, or that the timestep is too long.
+# > thermostat, the sum of kinetic and potential energy must be conserved. At a
+# > timestep already shown to be small enough, any systematic drift indicates
+# > that the forces are not the exact gradient of the energy.
 
 # %%
 from ase.md.verlet import VelocityVerlet
@@ -326,7 +344,7 @@ print("not an error in the same sense, but it does grow with the timestep:")
 print(f"{ratio:.1f}x larger at 1.0 fs than at 0.25 fs here. It measures how far the")
 print("discrete trajectory departs from the continuous one it approximates, which")
 print("is exactly what makes a thermostat mis-set the temperature in 4.2.")
-print("\nIf the drift column were NOT flat, the problem would not be integration.")
+print("\nIf the drift column were NOT flat at 0.25 fs, the problem would not be integration.")
 print("It would mean the forces are not the gradient of the energy, and nothing")
 print("computed from any trajectory would be meaningful. Run this test on any")
 print("potential you have not used before; it costs seconds.")

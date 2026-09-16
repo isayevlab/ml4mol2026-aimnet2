@@ -51,22 +51,31 @@
 # nothing for some time. This is expected.
 
 # %%
-import subprocess, sys, warnings
+import os, subprocess, sys, warnings
 warnings.filterwarnings("ignore")
+assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
+
+if sys.platform == "win32":
+    # torch.compile needs a C++ compiler, which Windows machines rarely have.
+    # Disabling it must happen before torch is imported.
+    os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 
 def _pip(*packages):
-    subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages], check=True)
+    r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages],
+                       capture_output=True, text=True)
+    if r.returncode:
+        print(r.stdout[-2000:]); print(r.stderr[-4000:])
+        raise RuntimeError("pip install failed; see the output above")
 
 try:
     import aimnet, rdkit, ase          # noqa: F401
 except ImportError:
-    _pip("aimnet[ase]", "rdkit")
+    _pip("aimnet[ase]", "rdkit", "warp-lang<1.18")
 import numpy as np
 import torch
 from aimnet.calculators import AIMNet2Calculator, AIMNet2ASE
 
 GPU = torch.cuda.is_available()
-assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
 print(f"Python {sys.version.split()[0]}   PyTorch {torch.__version__}   GPU available: {GPU}")
 
 _ = AIMNet2Calculator("aimnet2")          # downloads parameters on first use
@@ -108,10 +117,16 @@ def build(smiles, charge=None, mult=1, seed=42):
     atoms.info["mult"] = int(mult)
     return atoms
 
+_MODELS = {}
+
 def attach(atoms, model="aimnet2"):
     """Attach an AIMNet2 calculator to a structure, so that energies and
-    forces can be requested from it through the standard ASE interface."""
-    atoms.calc = AIMNet2ASE(AIMNet2Calculator(model),
+    forces can be requested from it through the standard ASE interface.
+    Loading a model is the slow step, so each model is loaded once and
+    shared by every structure that uses it."""
+    if model not in _MODELS:
+        _MODELS[model] = AIMNet2Calculator(model)
+    atoms.calc = AIMNet2ASE(_MODELS[model],
                             charge=atoms.info.get("charge", 0),
                             mult=atoms.info.get("mult", 1))
     return atoms
@@ -143,8 +158,8 @@ MENU = [
       background="The single most cited conformational equilibrium in organic chemistry. "
                  "A six-membered ring adopts a chair; a substituent on it can point "
                  "roughly along the ring axis (axial) or roughly in the ring plane "
-                 "(equatorial). Equatorial is the lower of the two, and the gap is\n"
-                 "called the A-value. Higher conformers in your list are twist-boats,\n"
+                 "(equatorial). Equatorial is the lower of the two, and the gap is "
+                 "called the A-value. Higher conformers in your list are twist-boats, "
                  "which are several kcal/mol above either chair.",
       reference="Experiment: equatorial lower by 1.74 kcal/mol (the A-value of methyl).",
       measure=("none", None, None, "relative energy / kcal mol-1")),
@@ -153,7 +168,7 @@ MENU = [
                "Measure the shortest O...H distance.",
       background="Two hydroxyl groups on adjacent carbons can rotate to face each other. "
                  "If they do, one donates a hydrogen bond to the other.",
-      reference="A hydrogen bond gives an H...O distance near 2.0 to 2.3 A; with no "
+      reference="A hydrogen bond gives an H...O distance of roughly 1.8 to 2.3 A; with no "
                 "interaction the two hydroxyls point apart and the distance exceeds "
                 "3.5 A.",
       measure=("hbond", None, None, "shortest H-bond contact / A")),
@@ -161,8 +176,8 @@ MENU = [
       question="How many conformers lie within 3 kcal/mol, and does the lowest one "
                "place the amine near the carbonyl?",
       background="The smallest amino acid. Even with only a few rotatable bonds it has "
-                 "several accessible conformers. Two intramolecular motifs compete: a\n"
-                 "bifurcated N-H...O=C contact and a shorter O-H...N contact. The\n"
+                 "several accessible conformers. Two intramolecular motifs compete: a "
+                 "bifurcated N-H...O=C contact and a shorter O-H...N contact. The "
                  "column below reports whichever is shortest in each conformer.",
       reference="Gas-phase glycine has several conformers within 2 kcal/mol.",
       measure=("hbond", None, None, "shortest H-bond contact / A")),
@@ -175,8 +190,9 @@ MENU = [
  dict(id="butanediol", name="1,4-butanediol", smiles="OCCCCO", n=50,
       question="How many distinct conformers are there, and what fraction of the "
                "population does the lowest hold?",
-      background="Five rotatable bonds. A useful illustration of how quickly the number "
-                 "of conformers grows with flexibility.",
+      background="Five single bonds along the O-C-C-C-C-O chain (RDKit counts three as "
+                 "rotatable, since it excludes bonds to terminal OH groups). A useful "
+                 "illustration of how quickly the number of conformers grows with flexibility.",
       reference="Expect tens of conformers and no single dominant one.",
       measure=("hbond", None, None, "shortest H-bond contact / A")),
  dict(id="ibuprofen", name="ibuprofen", smiles="CC(C)Cc1ccc(cc1)C(C)C(=O)O", n=50,
@@ -192,8 +208,9 @@ MENU = [
       background="The standard minimal model of a protein backbone. Its two backbone "
                  "torsion angles, phi and psi, are the axes of the Ramachandran plot that "
                  "every structural biologist knows.",
-      reference="Expect the extended beta / C5 basin near phi = -150 deg to dominate in "
-                "the gas phase; the alpha basin near phi = -80 deg is stabilised by water.",
+      reference="Expect the extended C5 / beta basin (phi near -150 deg) and the C7eq basin "
+                "(phi near -80 deg, psi near +70 deg) to dominate in the gas phase; the "
+                "alpha-helical basin (phi near -60 deg, psi near -45 deg) is stabilised by water.",
       measure=("rama", "C(=O)[NX3][CX4][CX3](=O)[NX3]", None, "phi, psi / deg")),
 ]
 

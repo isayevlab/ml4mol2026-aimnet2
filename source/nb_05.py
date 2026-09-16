@@ -32,10 +32,10 @@
 #
 # ## The example
 #
-# Chloride attacking chloromethane: the S_N2 reaction, and the first mechanism
+# Chloride attacking chloromethane: the S<sub>N</sub>2 reaction, and the first mechanism
 # most chemists learn to draw.
 #
-# > **Reminder — S_N2.** A nucleophile attacks a carbon from the side opposite
+# > **Reminder — S<sub>N</sub>2.** A nucleophile attacks a carbon from the side opposite
 # > the leaving group. The carbon passes through a planar arrangement of its
 # > three remaining substituents and emerges with its configuration inverted.
 
@@ -49,16 +49,26 @@
 # nothing for some time. This is expected.
 
 # %%
-import subprocess, sys, warnings
+import os, subprocess, sys, warnings
 warnings.filterwarnings("ignore")
+assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
+
+if sys.platform == "win32":
+    # torch.compile needs a C++ compiler, which Windows machines rarely have.
+    # Disabling it must happen before torch is imported.
+    os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 
 def _pip(*packages):
-    subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages], check=True)
+    r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages],
+                       capture_output=True, text=True)
+    if r.returncode:
+        print(r.stdout[-2000:]); print(r.stderr[-4000:])
+        raise RuntimeError("pip install failed; see the output above")
 
 try:
     import aimnet, rdkit, ase          # noqa: F401
 except ImportError:
-    _pip("aimnet[ase]", "rdkit")
+    _pip("aimnet[ase]", "rdkit", "warp-lang<1.18")
 
 try:
     from sella import Sella
@@ -70,7 +80,6 @@ import torch
 from aimnet.calculators import AIMNet2Calculator, AIMNet2ASE
 
 GPU = torch.cuda.is_available()
-assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
 print(f"Python {sys.version.split()[0]}   PyTorch {torch.__version__}   GPU available: {GPU}")
 
 _ = AIMNet2Calculator("aimnet2-nse")          # downloads parameters on first use
@@ -112,10 +121,16 @@ def build(smiles, charge=None, mult=1, seed=42):
     atoms.info["mult"] = int(mult)
     return atoms
 
+_MODELS = {}
+
 def attach(atoms, model="aimnet2"):
     """Attach an AIMNet2 calculator to a structure, so that energies and
-    forces can be requested from it through the standard ASE interface."""
-    atoms.calc = AIMNet2ASE(AIMNet2Calculator(model),
+    forces can be requested from it through the standard ASE interface.
+    Loading a model is the slow step, so each model is loaded once and
+    shared by every structure that uses it."""
+    if model not in _MODELS:
+        _MODELS[model] = AIMNet2Calculator(model)
+    atoms.calc = AIMNet2ASE(_MODELS[model],
                             charge=atoms.info.get("charge", 0),
                             mult=atoms.info.get("mult", 1))
     return atoms
@@ -139,13 +154,13 @@ FMAX = 0.02             # force convergence threshold, eV per Angstrom
 
 # %%
 
-reactant = Atoms("CClClHHH", positions=[
+chloride_complex = Atoms("CClClHHH", positions=[
     [0, 0, 0], [1.80, 0, 0], [-3.40, 0, 0],
     [-0.36, 1.03, 0], [-0.36, -0.515, 0.892], [-0.36, -0.515, -0.892]])
-reactant.info.update(charge=-1, mult=1)
+chloride_complex.info.update(charge=-1, mult=1)
 
 try:
-    test = reactant.copy(); test.info.update(charge=-1, mult=1)
+    test = chloride_complex.copy(); test.info.update(charge=-1, mult=1)
     test.calc = AIMNet2ASE(AIMNet2Calculator("aimnet2-rxn"), charge=-1, mult=1)
     test.get_potential_energy()
     print("No error raised. Check the installed version.")
@@ -163,7 +178,7 @@ except Exception as exc:
 #
 # This is where AIMNet2 differs usefully from most machine-learned potentials.
 # It provides **analytic second derivatives**, obtained by differentiating the
-# network twice in closed form. The alternative, finite differences, requires
+# network twice by automatic differentiation. The alternative, finite differences, requires
 # 6*N* additional gradient evaluations and a step size that must be chosen.
 
 # %%
@@ -284,7 +299,7 @@ for i in np.argsort(-magnitudes):
 # The carbon carries almost all of the motion; the two chlorines move little.
 # What the mode describes is the carbon passing through the plane of its three
 # hydrogens while one C–Cl bond lengthens and the other shortens. That is
-# precisely the inversion of configuration that defines an S_N2 reaction.
+# precisely the inversion of configuration that defines an S<sub>N</sub>2 reaction.
 #
 # ## 5.5 Beyond a single saddle point
 #

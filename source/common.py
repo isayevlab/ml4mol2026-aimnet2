@@ -8,27 +8,37 @@ SETUP = '''# %% [markdown]
 # nothing for some time. This is expected.
 
 # %%
-import subprocess, sys, warnings
+import os, subprocess, sys, warnings
 warnings.filterwarnings("ignore")
+assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
+
+if sys.platform == "win32":
+    # torch.compile needs a C++ compiler, which Windows machines rarely have.
+    # Disabling it must happen before torch is imported.
+    os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 
 def _pip(*packages):
-    subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages], check=True)
+    r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages],
+                       capture_output=True, text=True)
+    if r.returncode:
+        print(r.stdout[-2000:]); print(r.stderr[-4000:])
+        raise RuntimeError("pip install failed; see the output above")
 
 try:
     import aimnet, rdkit, ase          # noqa: F401
 except ImportError:
-    _pip("aimnet[ase]", "rdkit")
+    _pip("aimnet[ase]", "rdkit", "warp-lang<1.18")
 EXTRA_INSTALL
 import numpy as np
 import torch
 from aimnet.calculators import AIMNet2Calculator, AIMNet2ASE
 
 GPU = torch.cuda.is_available()
-assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
 print(f"Python {sys.version.split()[0]}   PyTorch {torch.__version__}   GPU available: {GPU}")
 
 _ = AIMNet2Calculator("MODEL")          # downloads parameters on first use
 print("Model loaded.")
+
 '''
 
 HELPERS = '''# %% [markdown]
@@ -68,10 +78,16 @@ def build(smiles, charge=None, mult=1, seed=42):
     atoms.info["mult"] = int(mult)
     return atoms
 
+_MODELS = {}
+
 def attach(atoms, model="aimnet2"):
     """Attach an AIMNet2 calculator to a structure, so that energies and
-    forces can be requested from it through the standard ASE interface."""
-    atoms.calc = AIMNet2ASE(AIMNet2Calculator(model),
+    forces can be requested from it through the standard ASE interface.
+    Loading a model is the slow step, so each model is loaded once and
+    shared by every structure that uses it."""
+    if model not in _MODELS:
+        _MODELS[model] = AIMNet2Calculator(model)
+    atoms.calc = AIMNet2ASE(_MODELS[model],
                             charge=atoms.info.get("charge", 0),
                             mult=atoms.info.get("mult", 1))
     return atoms

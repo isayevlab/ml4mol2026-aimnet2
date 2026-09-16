@@ -48,22 +48,31 @@
 # nothing for some time. This is expected.
 
 # %%
-import subprocess, sys, warnings
+import os, subprocess, sys, warnings
 warnings.filterwarnings("ignore")
+assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
+
+if sys.platform == "win32":
+    # torch.compile needs a C++ compiler, which Windows machines rarely have.
+    # Disabling it must happen before torch is imported.
+    os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 
 def _pip(*packages):
-    subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages], check=True)
+    r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", *packages],
+                       capture_output=True, text=True)
+    if r.returncode:
+        print(r.stdout[-2000:]); print(r.stderr[-4000:])
+        raise RuntimeError("pip install failed; see the output above")
 
 try:
     import aimnet, rdkit, ase          # noqa: F401
 except ImportError:
-    _pip("aimnet[ase]", "rdkit")
+    _pip("aimnet[ase]", "rdkit", "warp-lang<1.18")
 import numpy as np
 import torch
 from aimnet.calculators import AIMNet2Calculator, AIMNet2ASE
 
 GPU = torch.cuda.is_available()
-assert sys.version_info >= (3, 11), "aimnet requires Python 3.11 or later"
 print(f"Python {sys.version.split()[0]}   PyTorch {torch.__version__}   GPU available: {GPU}")
 
 _ = AIMNet2Calculator("aimnet2")          # downloads parameters on first use
@@ -105,10 +114,16 @@ def build(smiles, charge=None, mult=1, seed=42):
     atoms.info["mult"] = int(mult)
     return atoms
 
+_MODELS = {}
+
 def attach(atoms, model="aimnet2"):
     """Attach an AIMNet2 calculator to a structure, so that energies and
-    forces can be requested from it through the standard ASE interface."""
-    atoms.calc = AIMNet2ASE(AIMNet2Calculator(model),
+    forces can be requested from it through the standard ASE interface.
+    Loading a model is the slow step, so each model is loaded once and
+    shared by every structure that uses it."""
+    if model not in _MODELS:
+        _MODELS[model] = AIMNet2Calculator(model)
+    atoms.calc = AIMNet2ASE(_MODELS[model],
                             charge=atoms.info.get("charge", 0),
                             mult=atoms.info.get("mult", 1))
     return atoms
@@ -165,6 +180,10 @@ def ir_intensities(atoms, disp, step=0.01):
     derivative of the dipole with respect to each Cartesian coordinate, then
     projected onto each normal mode. This requires 6N dipole evaluations, which
     is affordable because each one is a single AIMNet2 call.
+
+    The partial charges are recomputed at every displaced geometry. Reusing the
+    equilibrium charges would drop the charge-flux term, which dominates the
+    intensity of polar bonds such as C=O.
     """
     n = len(atoms)
     reference = atoms.get_positions().copy()
@@ -175,7 +194,9 @@ def ir_intensities(atoms, disp, step=0.01):
             for sign in (+1, -1):
                 p = reference.copy(); p[i, c] += sign * step
                 atoms.set_positions(p)
-                accumulated += sign * np.asarray(atoms.get_dipole_moment())
+                atoms.get_potential_energy()            # forces a fresh evaluation
+                q = np.asarray(atoms.get_charges())
+                accumulated += sign * (q[:, None] * p).sum(axis=0)
             dmu[i, c] = accumulated / (2 * step)
     atoms.set_positions(reference)
     values = np.array([float(np.einsum("ic,icx->x", d, dmu) @ np.einsum("ic,icx->x", d, dmu))
@@ -204,8 +225,8 @@ MENU = [
       bands="bend 1595, symmetric stretch 3657, antisymmetric stretch 3756",
       note="Three atoms, three vibrations. The simplest possible test."),
  dict(id="formaldehyde", name="formaldehyde", smiles="C=O",
-      bands="CH2 wag 1167, CH2 scissor 1500, C=O stretch 1746, CH stretches 2782 and 2843",
-      note="Watch for a mode with almost zero intensity. Ask yourself why."),
+      bands="CH2 wag 1167, CH2 rock 1249, CH2 scissor 1500, C=O stretch 1746, CH stretches 2782 and 2843",
+      note="One mode is very weak. Ask which atoms move in it, and why that barely changes the dipole."),
  dict(id="methanol", name="methanol", smiles="CO",
       bands="C-O stretch 1033, CH3 deformations 1340-1477, CH stretches 2844-3000, O-H stretch 3681",
       note="The O-H stretch is the highest band and is strongly anharmonic."),
@@ -268,7 +289,7 @@ print("No imaginary frequencies: this is a genuine minimum.")
 print(f"{'mode':>6}{'frequency / cm-1':>20}{'relative intensity':>22}")
 print("-" * 52)
 for k, (f, a) in enumerate(zip(freqs, intensities)):
-    flag = "   inactive" if a < 0.02 else ""
+    flag = "   weak" if a < 0.02 else ""
     print(f"{k+1:>6}{f:>20.0f}{a:>18.3f}   {'#' * int(round(a * 22))}{flag}")
 
 # %% [markdown]
@@ -318,15 +339,16 @@ for i in np.argsort(-magnitude):
 # Compare each computed band with the experimental list printed in step 1.
 # You should find that:
 #
-# - bending and skeletal modes, below about 1800 cm⁻¹, agree closely;
+# - bending and skeletal modes, below about 1500 cm⁻¹, agree closely;
 # - X–H stretching modes, above 2800 cm⁻¹, are overestimated by roughly 3 to 5
-#   percent.
+#   percent, and the stretches of multiple bonds such as C=O and C≡N by a
+#   similar amount.
 #
 # That discrepancy is **not** a deficiency of the model. It is the harmonic
-# approximation. A real X–H bond is anharmonic: the true potential is shallower
+# approximation. A real bond is anharmonic: the true potential is shallower
 # than a parabola at large displacement, which lowers the observed frequency.
 # Quantum chemistry programs routinely apply an empirical scaling factor of
-# about 0.96 to harmonic X–H frequencies for this reason.
+# about 0.96 to harmonic frequencies for this reason.
 
 # %%
 SCALE = 0.96
