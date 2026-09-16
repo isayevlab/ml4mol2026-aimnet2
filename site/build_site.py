@@ -42,7 +42,7 @@ def notebook_list():
 
 
 def write(name, html):
-    (OUT / name).write_text(html, encoding="utf-8")
+    (OUT / name).write_text(html, encoding="utf-8", newline="\n")
     print(f"  {name}  {len(html) // 1024} KB")
 
 
@@ -150,7 +150,10 @@ INSTALL = f"""
       the repository, by clicking its <strong>open in colab</strong> link.</li>
   <li>In the Colab menu choose <strong>Runtime &rarr; Change runtime type</strong>
       and select <strong>T4 GPU</strong>. Do this <em>before</em> running anything.
-      The free T4 makes the exercises roughly ten times faster.</li>
+      If a runtime has already started, restart it after switching
+      (<strong>Runtime &rarr; Restart session</strong>); a running runtime does not
+      move to the GPU on its own. The free T4 makes the exercises roughly ten times
+      faster.</li>
   <li>Run the first cell. It installs the packages and downloads the model
       parameters. This takes about a minute and prints nothing while it works, so
       it will look stalled. It is not.</li>
@@ -167,13 +170,16 @@ INSTALL = f"""
 </div>
 
 <h2 id="local">Route 2: a local install</h2>
-<p class="lede">About five minutes, plus a 3&nbsp;GB download for PyTorch.</p>
+<p class="lede">About five minutes, plus the PyTorch download: about 3&nbsp;GB on
+Linux x86-64, roughly 120&nbsp;MB of torch plus 150&nbsp;MB of warp on Windows, and
+roughly 150&nbsp;MB on an Apple Silicon Mac.</p>
 
 <h3>Will it run on your machine?</h3>
 <div class="tw"><table>
 <tr><th>Platform</th><th>Supported</th><th>Compute</th><th>Notes</th></tr>
 <tr><td>Linux, x86-64</td><td class="yes">yes</td><td>NVIDIA GPU or CPU</td>
-    <td>A CUDA-enabled PyTorch is installed automatically. Nothing extra to do.</td></tr>
+    <td>A CUDA-enabled PyTorch is installed automatically. It needs NVIDIA driver
+        580 or newer; see the Linux tab for older drivers.</td></tr>
 <tr><td>Linux, ARM64</td><td class="yes">yes</td><td>CPU</td>
     <td>Includes Raspberry Pi-class hardware and ARM cloud instances.</td></tr>
 <tr><td>Windows 10 / 11, x86-64</td><td class="yes">yes</td><td>NVIDIA GPU or CPU</td>
@@ -190,7 +196,7 @@ INSTALL = f"""
 <p>You need <strong>Python 3.11 or later</strong>. AIMNet2 declares
 <code>requires-python &gt;= 3.11</code> and will refuse to install on 3.10 or older.
 Check with <code>python3 --version</code> (macOS, Linux) or <code>py --version</code>
-(Windows).</p>
+(Windows; Store Python: <code>python --version</code>).</p>
 
 <h3>Install</h3>
 <p>Pick your platform. Each block creates an isolated environment so nothing lands in
@@ -211,7 +217,7 @@ mkdir ~/aimnet2-tutorial &amp;&amp; cd ~/aimnet2-tutorial
 python3 -m venv .venv
 source .venv/bin/activate
 
-<span class="c"># install (about 3 GB, mostly PyTorch)</span>
+<span class="c"># install (about 150 MB)</span>
 pip install --upgrade pip
 pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
 
@@ -225,13 +231,15 @@ jupyter lab</code></pre>
 
 <div class="panel" hidden>
   <p>PowerShell. Install Python from <a href="https://www.python.org/downloads/windows/">python.org</a>
-  or the Microsoft Store first, and tick <strong>Add python.exe to PATH</strong>.</p>
+  or the Microsoft Store first, and tick <strong>Add python.exe to PATH</strong>.
+  (Store Python does not ship the <code>py</code> launcher: use
+  <code>python -m venv .venv</code> and <code>python --version</code>.)</p>
 <pre><code><span class="c"># make a folder for the tutorial and a virtual environment inside it</span>
 mkdir $HOME\\aimnet2-tutorial; cd $HOME\\aimnet2-tutorial
 py -3.12 -m venv .venv
 .\\.venv\\Scripts\\Activate.ps1
 
-<span class="c"># install (about 3 GB, mostly PyTorch)</span>
+<span class="c"># install (roughly 120 MB torch plus 150 MB warp)</span>
 python -m pip install --upgrade pip
 pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
 
@@ -251,11 +259,15 @@ jupyter lab</code></pre>
     <div class="k">For an NVIDIA GPU on Windows</div>
     <p>The PyTorch published on PyPI for Windows is CPU-only; the CUDA build comes
     from PyTorch's own index. Install it <em>before</em> AIMNet2:</p>
-    <pre><code>pip install torch --index-url https://download.pytorch.org/whl/cu128
+    <pre><code>pip install torch --index-url https://download.pytorch.org/whl/cu126
 pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab</code></pre>
-    <p>Match <code>cu128</code> to your driver; the current options are listed at
+    <p>The <code>cu126</code> build needs NVIDIA driver 525 or newer; the current
+    options are listed at
     <a href="https://pytorch.org/get-started/locally/">pytorch.org/get-started/locally</a>.
     Without this everything still works, just on the CPU.</p>
+    <p><code>torch.compile</code> is unavailable on Windows, which has no C++ compiler
+    or Triton, so the setup cell in every notebook disables it automatically there.
+    Nothing to do.</p>
   </div>
 </div>
 
@@ -265,7 +277,7 @@ mkdir ~/aimnet2-tutorial &amp;&amp; cd ~/aimnet2-tutorial
 python3 -m venv .venv
 source .venv/bin/activate
 
-<span class="c"># install (about 3 GB, and on x86-64 this pulls CUDA support too)</span>
+<span class="c"># install (about 3 GB on x86-64, because the PyTorch wheel bundles CUDA)</span>
 pip install --upgrade pip
 pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
 
@@ -273,8 +285,18 @@ pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
 git clone {GH}.git
 cd ml4mol2026-aimnet2
 jupyter lab</code></pre>
-  <p>On x86-64 Linux the PyPI PyTorch wheel bundles CUDA 12.8, so an NVIDIA GPU with
-  a recent driver is picked up with no extra steps. Confirm with:</p>
+  <p>On x86-64 Linux the PyPI PyTorch wheel has bundled CUDA 13.0 since torch 2.11,
+  which needs NVIDIA driver 580 or newer. On an older driver the install succeeds but
+  <code>torch.cuda.is_available()</code> is silently <code>False</code>. Check the
+  driver version with <code>nvidia-smi</code> first; if it is below 580, install torch
+  from the CUDA 12.6 index <em>before</em> the rest:</p>
+  <pre><code>pip install torch --index-url https://download.pytorch.org/whl/cu126
+pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab</code></pre>
+  <p>On a laptop without an NVIDIA GPU, install the CPU build first instead. It cuts
+  the download from about 3&nbsp;GB to about 200&nbsp;MB:</p>
+  <pre><code>pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab</code></pre>
+  <p>Either way, confirm with:</p>
   <pre><code>python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 </div>
 
@@ -326,9 +348,11 @@ running Python.</p>
 <tr><td><code>aimnet2-2025</code></td><td>14</td><td>closed shell</td>
     <td>a second opinion at a different level of theory</td></tr>
 <tr><td><code>aimnet2-nse</code></td><td>14</td><td>any charge, any multiplicity</td>
-    <td>radicals and ions; notebooks 7 and 8</td></tr>
+    <td>radicals and ions; notebooks 5, 7 and 8. The transition-state search in
+        notebook 5 uses it</td></tr>
 <tr><td><code>aimnet2-rxn</code></td><td>H C N O</td><td>neutral only</td>
-    <td>transition states and reaction paths; notebook 5</td></tr>
+    <td>reaction paths in neutral H, C, N, O systems. Appears in notebook 5 only to
+        show it refusing a charged chloride system</td></tr>
 <tr><td><code>aimnet2-pd</code></td><td>14, plus Pd</td><td>closed shell</td>
     <td>palladium. Not a gas-phase model: its energies are not comparable with any
         other member's</td></tr>
@@ -483,8 +507,8 @@ and use <code>py -3.12 -m venv .venv</code>; on Linux use your distribution's
 <a href="install.html#colab">Colab</a>.</p>
 
 <h3><code>pip install</code> downloads gigabytes and then fails on disk space</h3>
-<p>PyTorch is about 3&nbsp;GB installed, more during the install while the wheel is
-still cached. Free up 6&nbsp;GB, or point pip's cache elsewhere with
+<p>On Linux x86-64 PyTorch is about 3&nbsp;GB installed, more during the install
+while the wheel is still cached (the Windows and macOS wheels are far smaller). Free up 6&nbsp;GB, or point pip's cache elsewhere with
 <code>PIP_CACHE_DIR</code>, or install with <code>--no-cache-dir</code>.</p>
 
 <h3>PowerShell: <em>running scripts is disabled on this system</em></h3>
@@ -498,6 +522,19 @@ scripts downloaded from the internet.</p>
 <p>Harmless. One of AIMNet2's dependencies looks for a GPU at import time and says so
 when it does not find one. Everything runs on the CPU. You will see this on every
 Mac and on any machine without an NVIDIA card.</p>
+
+<h3><code>Could not find or load the NVIDIA CUDA driver</code> on a machine that has an NVIDIA card</h3>
+<p>warp-lang 1.18 and later need NVIDIA driver 580 or newer. The setup cell and
+<code>requirements.txt</code> pin <code>warp-lang&lt;1.18</code>, so this should not
+happen from the notebooks. If you installed by hand, either update the driver or
+<code>pip install "warp-lang&lt;1.18"</code>.</p>
+
+<h3>Windows: <code>InductorError: InvalidCxxCompiler: Compiler: cl is not found</code></h3>
+<p>Any <code>torch._inductor</code> or <code>torch._dynamo</code> error on Windows has
+the same cause: <code>torch.compile</code> needs a C++ compiler, and Windows has none.
+The setup cell sets <code>TORCHDYNAMO_DISABLE=1</code> on Windows before torch is
+imported. If torch was imported earlier some other way, restart the kernel and run the
+setup cell first.</p>
 
 <h2>Running</h2>
 
@@ -648,12 +685,15 @@ their numbers directly: the same question, different substituent, larger gap for
 chlorine.</p>
 
 <h3>Exercise 2, infrared</h3>
-<p><strong>Read the answer key before the session.</strong> For five of the eight
-molecules the strongest band is not the functional-group band a chemist would name
-first. Acetone's C=O and acetonitrile's C&equiv;N are both present at sensible
-positions, but a methyl deformation carries more intensity. Seats 3 and 4 will think
-they have made a mistake. They have not, and the reason (intensity is
-&part;&mu;/&part;Q, not chemical importance) is the most useful thing in the
+<p><strong>Read the answer key before the session.</strong> For six of the eight
+molecules the strongest band is the one a chemist would name first: C=O, C&equiv;N,
+C&ndash;Cl and C&ndash;O all dominate their spectra, because intensity is
+&part;&mu;/&part;Q and polar bonds have the largest dipole derivative. The two
+alcohols are the exception. Methanol (seat 2) and ethanol (seat 7) show a very
+strong hydroxyl torsion at 205 and 282 cm<sup>&minus;1</sup>, and for ethanol it is
+the strongest band in the spectrum. Seat 7 will report it as their answer. That is
+what the code returns, and the reason it is not a prediction of an observable band
+(a torsional potential is nowhere near quadratic) is the most useful thing in the
 exercise.</p>
 
 <h3>Exercise 3, reactivity</h3>
@@ -693,9 +733,9 @@ python check_notebooks.py  <span class="c"># static check</span></code></pre>
 <p>An answer notebook is its exercise with the answer-key markdown from
 <code>keys/</code> prepended and the two blanks filled. Nothing else may differ, so a
 correction to an exercise reaches its answer key automatically.</p>
-<p>The deck is a single self-contained HTML file in <code>slides/</code>. It works
-offline from a local file, which is worth knowing when the conference network fails.
-Press <kbd>P</kbd> to print it to PDF.</p>
+<p>The deck is a single HTML file in <code>slides/</code>. It renders offline from a
+local file; the typefaces fall back to system fonts without a network, which is worth
+knowing when the conference network fails. Press <kbd>P</kbd> to print it to PDF.</p>
 """
 
 write("teaching.html", shell.page(

@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Machine-Learned Potentials Tutorial</title>
+<title>AIMNet2 tutorial slides</title>
 <meta name="description" content="Hands-on AIMNet2 tutorial. AiMat Summer School 2026, Machine Learning for Molecules.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap"></noscript>
 <style>
 /* ---- Carnegie Mellon core palette (brand.cmu.edu/visual-identity/colors) ---- */
 :root{
@@ -249,7 +250,7 @@ const SLIDES = [
   <div class="cols" style="width:100%">
     <p class="lead" style="font-size:23px">It takes about a minute. It installs the package and downloads the model parameters, once per machine, with no progress output.</p>
     <div class="stack tight">
-      <p class="sub"><strong>On Colab:</strong> Runtime &rarr; Change runtime type &rarr; <strong>T4 GPU</strong>. Nothing to clone.</p>
+      <p class="sub"><strong>On Colab:</strong> Runtime &rarr; Change runtime type &rarr; <strong>T4 GPU</strong>. If a runtime has already started, restart it after switching. Nothing to clone.</p>
       <p class="sub">Everything also runs on CPU, five to twenty times more slowly.</p>
     </div>
   </div>
@@ -309,7 +310,7 @@ const SLIDES = [
   <div class="eyebrow grey">Coverage</div>
   <h2>Fourteen elements</h2>
   <div class="molgrid six">
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='163px' height='141px' viewBox='18.5 -5.5 163.0 141.0'><ellipse cx='94.9' cy='53.1' rx='9.9' ry='9.9' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 24.5,13.9 L 60.9,13.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 77.5,24.0 L 88.6,42.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 98.3,65.5 L 109.5,84.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 104.3,61.9 L 115.5,80.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 86.7,58.0 L 65.1,70.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 55.2,87.9 L 55.8,123.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 103.2,48.1 L 124.8,35.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 144.9,34.7 L 175.5,51.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 65.0 13.2
 Q 65.0 10.0, 66.5 8.3
 Q 68.1 6.5, 71.0 6.5
@@ -400,7 +401,7 @@ Q 132.8 24.0, 131.7 25.3
 Q 130.6 26.6, 130.6 29.2
 Q 130.6 31.8, 131.7 33.2
 Q 132.8 34.5, 134.8 34.5
-' fill='#000000'/></svg></div><figcaption>trimethyl phosphate</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>trimethyl phosphate</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='192px' height='110px' viewBox='4.0 10.0 192.0 110.0'><ellipse cx='42.3' cy='62.6' rx='8.8' ry='8.8' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 11.2,35.5 L 35.0,56.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 51.9,56.0 L 63.2,43.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 47.2,52.0 L 58.5,38.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 32.7,68.8 L 21.2,82.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.3,72.8 L 25.9,86.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 49.6,68.7 L 65.4,82.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 81.3,86.6 L 112.3,75.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 112.3,75.9 L 120.0,35.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 119.0,73.5 L 125.4,40.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 120.0,35.5 L 158.9,22.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 158.9,22.0 L 190.0,48.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 157.6,29.0 L 183.3,51.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 190.0,48.9 L 182.2,89.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 182.2,89.3 L 143.4,102.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 176.8,84.7 L 144.7,95.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 143.4,102.8 L 112.3,75.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 119.6,37.5 L 120.0,35.5 L 122.0,34.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 157.0,22.7 L 158.9,22.0 L 160.5,23.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 188.4,47.6 L 190.0,48.9 L 189.6,51.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 182.6,87.3 L 182.2,89.3 L 180.3,90.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 145.3,102.1 L 143.4,102.8 L 141.8,101.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 39.0 66.4
 Q 39.1 66.5, 39.7 66.7
 Q 40.2 66.9, 40.8 67.1
@@ -495,7 +496,7 @@ L 70.4 102.6
 L 70.4 108.0
 L 68.8 108.0
 L 68.8 96.3
-' fill='#000000'/></svg></div><figcaption>a sulfonamide</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>a sulfonamide</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='188px' height='141px' viewBox='6.2 -5.5 187.6 141.0'><ellipse cx='129.2' cy='65.2' rx='14.4' ry='14.4' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 12.2,65.0 L 57.8,38.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 83.7,38.7 L 116.6,57.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 137.1,51.4 L 163.0,6.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 121.1,79.0 L 95.5,123.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 141.9,72.3 L 187.8,98.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 63.6 31.3
 Q 63.6 27.5, 65.4 25.4
 Q 67.3 23.3, 70.8 23.3
@@ -555,7 +556,7 @@ L 136.1 72.8
 L 134.0 72.8
 L 134.0 61.5
 ' fill='#000000'/></svg></div><figcaption>a silyl ether</figcaption></figure>
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='192px' height='117px' viewBox='4.0 6.3 192.0 117.4'><ellipse cx='148.6' cy='64.9' rx='9.9' ry='9.9' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 165.6,94.3 L 154.7,75.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 154.7,54.4 L 165.5,35.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 140.2,64.9 L 102.4,64.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 102.4,64.9 L 79.3,104.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 94.4,64.9 L 75.3,98.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,104.9 L 33.1,104.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 33.1,104.9 L 10.0,64.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.1,98.0 L 18.0,64.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 10.0,64.9 L 33.1,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 33.1,24.9 L 79.3,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.1,31.8 L 75.3,31.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,24.9 L 102.4,64.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.5,102.9 L 79.3,104.9 L 77.0,104.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 35.4,104.9 L 33.1,104.9 L 31.9,102.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 11.2,66.9 L 10.0,64.9 L 11.2,62.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 31.9,26.9 L 33.1,24.9 L 35.4,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 77.0,24.9 L 79.3,24.9 L 80.5,26.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 165.7 105.0
 Q 165.7 101.8, 167.3 100.1
 Q 168.8 98.3, 171.7 98.3
@@ -644,7 +645,7 @@ L 181.5 25.5
 L 181.5 31.5
 L 179.8 31.5
 L 179.8 18.4
-' fill='#000000'/></svg></div><figcaption>phenylboronic acid</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>phenylboronic acid</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='192px' height='81px' viewBox='4.0 27.8 192.0 81.0'><ellipse cx='72.8' cy='47.8' rx='15.6' ry='14.5' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 10.0,74.3 L 55.8,54.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 89.7,60.3 L 110.3,75.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 144.2,81.4 L 190.0,61.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 62.3 52.9
 Q 62.5 53.0, 63.2 53.3
 Q 64.0 53.6, 64.7 53.8
@@ -749,7 +750,7 @@ Q 130.7 88.0, 130.5 89.4
 L 136.1 89.4
 Q 135.9 87.9, 135.3 87.2
 Q 134.7 86.5, 133.6 86.5
-' fill='#000000'/></svg></div><figcaption>dimethyl diselenide</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>dimethyl diselenide</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='184px' height='98px' viewBox='4.0 16.0 183.7 98.0'><ellipse cx='180.9' cy='65.0' rx='9.1' ry='9.1' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 176.4,65.0 L 138.2,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 138.2,65.0 L 116.8,102.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 116.8,102.0 L 74.1,102.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 113.1,95.6 L 77.8,95.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 74.1,102.0 L 52.7,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 52.7,65.0 L 10.0,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 52.7,65.0 L 74.1,28.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 60.1,65.0 L 77.8,34.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 74.1,28.0 L 116.8,28.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 116.8,28.0 L 138.2,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 113.1,34.4 L 130.8,65.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 117.9,100.1 L 116.8,102.0 L 114.7,102.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 76.2,102.0 L 74.1,102.0 L 73.0,100.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 73.0,29.9 L 74.1,28.0 L 76.2,28.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 114.7,28.0 L 116.8,28.0 L 117.9,29.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 180.1 58.9
 L 181.7 58.9
 L 181.7 71.1
@@ -805,7 +806,7 @@ L 180.1 58.9
   <div class="eyebrow grey">Changing one input</div>
   <h2>Total charge is an input, not a correction</h2>
   <div class="cols" style="align-items:center">
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='160px' height='149px' viewBox='32.2 -3.2 159.6 148.9'><ellipse cx='171.3' cy='125.7' rx='20.4' ry='15.5' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 38.2,125.6 L 101.1,89.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 106.6,92.4 L 106.6,31.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 95.7,92.4 L 95.7,31.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 101.1,89.3 L 150.6,117.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 98.0,91.1 L 101.1,89.3 L 103.6,90.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 94.0 16.7
 Q 94.0 13.0, 95.8 10.9
 Q 97.7 8.8, 101.1 8.8
@@ -856,7 +857,7 @@ L 175.7 133.5
 L 173.6 133.5
 L 173.6 117.9
 ' fill='#000000'/></svg></div><figcaption>acetic acid &nbsp;·&nbsp; <code>charge = 0</code></figcaption></figure>
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='148px' height='145px' viewBox='38.7 2.5 148.1 145.0'><ellipse cx='105.4' cy='22.4' rx='14.9' ry='14.9' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><ellipse cx='169.8' cy='127.6' rx='15.4' ry='14.9' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 44.7,127.4 L 105.4,92.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.6,95.4 L 110.6,36.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 100.1,95.4 L 100.1,36.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.4,92.4 L 152.9,119.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 102.4,94.1 L 105.4,92.4 L 107.8,93.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 98.2 22.4
 Q 98.2 18.6, 100.1 16.5
 Q 101.9 14.5, 105.4 14.5
@@ -913,7 +914,7 @@ L 175.4 122.1
   <div class="eyebrow">The gas-phase limitation, demonstrated</div>
   <h2>Glycine has no zwitterion in the gas phase</h2>
   <div class="rxnrow">
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='220px' height='134px' viewBox='19.8 7.9 219.9 134.2'><ellipse cx='48.6' cy='94.5' rx='32.2' ry='16.7' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 67.1,97.1 L 110.2,122.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.2,122.0 L 164.6,90.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 169.3,93.3 L 169.3,41.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 159.8,93.3 L 159.8,41.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 164.6,90.6 L 206.4,114.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 108.0,120.7 L 110.2,122.0 L 112.9,120.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 161.8,92.2 L 164.6,90.6 L 166.6,91.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 25.8 82.8
 L 27.9 82.8
 L 27.9 89.4
@@ -1029,7 +1030,7 @@ L 228.3 117.8
 L 228.3 116.7
 ' fill='#000000'/></svg></div><figcaption>zwitterion, as it exists in water</figcaption></figure>
     <div class="arrow"><span>optimise</span></div>
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='224px' height='132px' viewBox='10.0 6.2 224.0 132.5'><ellipse cx='213.6' cy='118.7' rx='20.4' ry='13.2' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 57.3,94.2 L 99.5,118.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 99.5,118.5 L 152.9,87.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 157.5,90.4 L 157.5,39.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 148.2,90.4 L 148.2,39.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 152.9,87.7 L 193.8,111.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 97.3,117.3 L 99.5,118.5 L 102.1,117.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 150.2,89.3 L 152.9,87.7 L 154.9,88.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 16.0 79.9
 L 18.1 79.9
 L 18.1 86.5
@@ -1664,7 +1665,7 @@ L 152.0 41.9
         <p class="sub" style="font-size:18px">Couples the system to a heat bath so that it samples structures at a chosen temperature rather than conserving its initial energy.</p></div>
     </div>
     <div class="stack" style="justify-content:center">
-      <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+      <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='184px' height='165px' viewBox='34.8 -4.0 184.3 164.8'><ellipse cx='46.8' cy='35.6' rx='10.0' ry='10.0' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><ellipse cx='145.0' cy='142.0' rx='17.4' ry='10.0' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 54.2,48.8 L 75.8,72.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 59.4,44.1 L 78.2,64.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 75.8,72.5 L 121.6,62.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 121.6,62.6 L 135.8,17.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 129.5,60.9 L 141.3,24.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 135.8,17.9 L 181.6,8.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 181.6,8.0 L 213.1,42.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 179.2,15.7 L 205.2,44.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 213.1,42.7 L 198.9,87.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 198.9,87.3 L 153.1,97.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 193.4,81.3 L 155.5,89.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 153.1,97.3 L 142.2,131.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 153.1,97.3 L 121.6,62.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 74.7,71.3 L 75.8,72.5 L 78.0,72.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 135.1,20.2 L 135.8,17.9 L 138.1,17.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 179.3,8.5 L 181.6,8.0 L 183.2,9.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 211.6,41.0 L 213.1,42.7 L 212.4,44.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 199.6,85.1 L 198.9,87.3 L 196.6,87.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 40.8 35.5
 Q 40.8 32.3, 42.3 30.5
 Q 43.9 28.8, 46.8 28.8
@@ -1925,7 +1926,7 @@ L 446.1 71.2
     </div>
   </div>
   <div class="molgrid" style="grid-template-columns:repeat(8,1fr);gap:0 8px;margin-top:22px">
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='51px' height='48px' viewBox='56.9 31.2 50.7 47.6'><path d='M 62.9 43.4
 L 65.1 43.4
 L 65.1 50.0
@@ -1976,7 +1977,7 @@ Q 92.0 45.0, 90.7 46.5
 Q 89.5 48.1, 89.5 51.1
 Q 89.5 54.3, 90.7 55.9
 Q 92.0 57.5, 94.4 57.5
-' fill='#000000'/></svg></div><figcaption>water</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>water</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='150px' height='44px' viewBox='7.2 33.2 150.1 43.6'><path d='M 13.2,45.2 L 125.7,45.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 13.2,64.8 L 125.7,64.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 137.0 55.0
 Q 137.0 51.3, 138.9 49.2
 Q 140.7 47.1, 144.2 47.1
@@ -1995,7 +1996,7 @@ Q 141.8 48.9, 140.5 50.4
 Q 139.2 52.0, 139.2 55.0
 Q 139.2 58.2, 140.5 59.8
 Q 141.8 61.4, 144.2 61.4
-' fill='#000000'/></svg></div><figcaption>formaldehyde</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>formaldehyde</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='140px' height='40px' viewBox='12.3 35.0 139.9 40.0'><path d='M 18.3,54.9 L 108.1,54.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 117.2 54.9
 Q 117.2 51.2, 119.1 49.1
 Q 120.9 47.0, 124.4 47.0
@@ -2027,7 +2028,7 @@ L 136.1 55.6
 L 136.1 62.8
 L 134.0 62.8
 L 134.0 47.2
-' fill='#000000'/></svg></div><figcaption>methanol</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>methanol</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='116px' height='122px' viewBox='24.1 -6.1 116.3 122.2'><path d='M 30.1,104.1 L 82.2,74.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 82.2,74.0 L 134.4,104.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 86.8,76.6 L 86.8,27.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 77.7,76.6 L 77.7,27.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.6,75.5 L 82.2,74.0 L 84.9,75.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 75.1 13.8
 Q 75.1 10.1, 76.9 8.0
 Q 78.8 5.9, 82.2 5.9
@@ -2047,7 +2048,7 @@ Q 77.3 10.7, 77.3 13.8
 Q 77.3 16.9, 78.6 18.5
 Q 79.9 20.1, 82.2 20.1
 ' fill='#000000'/></svg></div><figcaption>acetone</figcaption></figure>
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='158px' height='45px' viewBox='3.1 32.5 158.3 45.0'><path d='M 9.1,55.0 L 79.3,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,55.0 L 137.6,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,44.5 L 137.6,44.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 79.3,65.5 L 137.6,65.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 75.8,55.0 L 79.3,55.0 L 82.2,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 146.1 47.2
 L 151.2 55.5
 Q 151.7 56.3, 152.5 57.8
@@ -2063,7 +2064,7 @@ L 145.6 62.8
 L 143.6 62.8
 L 143.6 47.2
 L 146.1 47.2
-' fill='#000000'/></svg></div><figcaption>acetonitrile</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>acetonitrile</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='131px' height='123px' viewBox='16.7 -6.5 131.1 123.0'><path d='M 121.5,20.0 L 84.7,41.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 84.7,41.2 L 43.0,17.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 84.7,41.2 L 84.7,83.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 126.2 14.4
 Q 126.2 10.5, 128.0 8.5
 Q 129.8 6.4, 133.3 6.4
@@ -2127,8 +2128,8 @@ L 94.3 87.7
 L 94.3 104.3
 L 92.3 104.3
 L 92.3 87.7
-' fill='#000000'/></svg></div><figcaption>chloroform</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
-width='126px' height='123px' viewBox='19.1 -6.5 126.3 123.0'><path d='M 139.4,55.0 L 110.8,104.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.8,104.5 L 53.7,104.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.9,95.9 L 58.6,95.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 53.7,104.5 L 25.1,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 25.1,55.0 L 53.7,5.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 35.0,55.0 L 58.6,14.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 53.7,5.5 L 110.8,5.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.8,5.5 L 139.4,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.9,14.1 L 129.5,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 138.0,57.5 L 139.4,55.0 L 138.0,52.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 112.3,102.0 L 110.8,104.5 L 108.0,104.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 56.5,104.5 L 53.7,104.5 L 52.2,102.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 26.5,57.5 L 25.1,55.0 L 26.5,52.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 52.2,8.0 L 53.7,5.5 L 56.5,5.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 108.0,5.5 L 110.8,5.5 L 112.3,8.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /></svg></div><figcaption>benzene</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>chloroform</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
+width='126px' height='123px' viewBox='19.1 -6.5 126.3 123.0'><path d='M 139.4,55.0 L 110.8,104.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.8,104.5 L 53.7,104.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.9,95.9 L 58.6,95.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 53.7,104.5 L 25.1,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 25.1,55.0 L 53.7,5.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 35.0,55.0 L 58.6,14.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 53.7,5.5 L 110.8,5.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 110.8,5.5 L 139.4,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.9,14.1 L 129.5,55.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 138.0,57.5 L 139.4,55.0 L 138.0,52.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 112.3,102.0 L 110.8,104.5 L 108.0,104.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 56.5,104.5 L 53.7,104.5 L 52.2,102.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 26.5,57.5 L 25.1,55.0 L 26.5,52.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 52.2,8.0 L 53.7,5.5 L 56.5,5.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 108.0,5.5 L 110.8,5.5 L 112.3,8.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /></svg></div><figcaption>benzene</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='154px' height='67px' viewBox='5.1 21.6 154.3 66.8'><path d='M 11.1,68.3 L 71.4,33.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 71.4,33.6 L 118.5,60.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 68.4,35.3 L 71.4,33.6 L 73.7,34.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 124.5 68.4
 Q 124.5 64.6, 126.3 62.5
 Q 128.2 60.5, 131.6 60.5
@@ -2197,7 +2198,7 @@ L 141.2 60.6
   <div class="eyebrow">Exercise 3 &middot; what you should find</div>
   <h2 class="plain">The index ranks; the Fukui function locates</h2>
   <div class="molgrid" style="grid-template-columns:repeat(4,1fr);gap:0 14px">
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='145px' height='147px' viewBox='27.6 -3.4 144.8 146.8'><ellipse cx='100.0' cy='93.1' rx='16.4' ry='16.4' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 33.6,131.4 L 100.0,93.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 100.0,93.1 L 166.4,131.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 105.8,96.4 L 105.8,31.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 94.2,96.4 L 94.2,31.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 96.7,95.0 L 100.0,93.1 L 103.3,95.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 92.8 16.5
 Q 92.8 12.7, 94.7 10.6
 Q 96.5 8.6, 100.0 8.6
@@ -2217,7 +2218,7 @@ Q 95.0 13.4, 95.0 16.5
 Q 95.0 19.6, 96.3 21.2
 Q 97.6 22.8, 100.0 22.8
 ' fill='#000000'/></svg></div><figcaption>acetone<br><em>&omega;</em> = 0.65 eV</figcaption></figure>
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='195px' height='138px' viewBox='5.0 1.2 195.0 137.6'><ellipse cx='194.0' cy='91.5' rx='15.0' ry='15.0' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 11.0,126.8 L 72.0,91.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 77.3,94.6 L 77.3,35.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 66.7,94.6 L 66.7,35.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 72.0,91.5 L 133.0,126.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 133.0,126.8 L 194.0,91.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 133.0,114.6 L 188.7,82.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 68.9,93.3 L 72.0,91.5 L 75.0,93.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 129.9,125.0 L 133.0,126.8 L 136.0,125.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 64.8 21.2
 Q 64.8 17.4, 66.7 15.3
 Q 68.5 13.2, 72.0 13.2
@@ -2237,7 +2238,7 @@ Q 67.0 18.1, 67.0 21.2
 Q 67.0 24.3, 68.3 25.9
 Q 69.6 27.5, 72.0 27.5
 ' fill='#000000'/></svg></div><figcaption>methyl vinyl ketone<br><em>&omega;</em> = 1.06 eV</figcaption></figure>
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='186px' height='62px' viewBox='18.7 38.6 186.2 62.5'><ellipse cx='24.7' cy='75.7' rx='13.7' ry='13.7' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 24.7,75.7 L 83.6,50.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 28.5,84.5 L 82.3,61.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 83.6,50.6 L 134.8,89.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 134.8,89.1 L 181.0,69.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 136.1,78.1 L 177.2,60.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.7,51.9 L 83.6,50.6 L 86.2,52.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 132.2,87.2 L 134.8,89.1 L 137.1,88.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 184.6 59.7
 Q 184.6 55.9, 186.5 53.9
 Q 188.3 51.8, 191.8 51.8
@@ -2257,7 +2258,7 @@ Q 186.8 56.6, 186.8 59.7
 Q 186.8 62.8, 188.1 64.4
 Q 189.4 66.0, 191.8 66.0
 ' fill='#000000'/></svg></div><figcaption>acrolein<br><em>&omega;</em> = 1.18 eV</figcaption></figure>
-    <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+    <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='186px' height='75px' viewBox='5.0 35.8 186.4 75.2'><ellipse cx='185.4' cy='54.6' rx='13.6' ry='13.6' style='fill:#F6D9DE;stroke:#F6D9DE;stroke-width:1.0px;stroke-linecap:butt' /><path d='M 185.4,54.6 L 139.5,99.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 178.8,47.8 L 136.9,88.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 139.5,99.0 L 78.2,81.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 78.2,81.4 L 28.3,67.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 75.6,90.6 L 25.7,76.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.8,72.2 L 30.9,57.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 141.8,96.8 L 139.5,99.0 L 136.5,98.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 81.3,82.3 L 78.2,81.4 L 75.7,80.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 13.4 56.1
 L 18.5 64.3
 Q 19.0 65.1, 19.9 66.6
@@ -2292,7 +2293,7 @@ L 13.4 56.1
       <tr class="hi"><td>nitrobenzene</td><td class="num">0.087</td><td class="num">0.120</td><td class="num">0.143</td><td class="sub">meta, partly</td></tr>
     </table>
     <div class="molgrid" style="grid-template-columns:1fr 1fr;gap:0 8px">
-      <figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+      <figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='174px' height='107px' viewBox='3.0 8.9 174.0 106.7'><path d='M 141.8,62.2 L 104.4,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 104.4,62.2 L 80.6,103.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 96.2,62.2 L 76.4,96.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.6,103.6 L 32.9,103.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 32.9,103.6 L 9.0,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.0,96.4 L 17.3,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 9.0,62.2 L 32.9,20.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 32.9,20.9 L 80.6,20.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 37.0,28.1 L 76.4,28.1' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 80.6,20.9 L 104.4,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 81.8,101.5 L 80.6,103.6 L 78.2,103.6' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 35.2,103.6 L 32.9,103.6 L 31.7,101.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 10.2,64.3 L 9.0,62.2 L 10.2,60.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 31.7,23.0 L 32.9,20.9 L 35.2,20.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 78.2,20.9 L 80.6,20.9 L 81.8,23.0' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 145.9 62.3
 Q 145.9 59.0, 147.5 57.2
 Q 149.1 55.4, 152.1 55.4
@@ -2324,7 +2325,7 @@ L 162.3 62.8
 L 162.3 69.1
 L 160.4 69.1
 L 160.4 55.6
-' fill='#000000'/></svg></div><figcaption>phenol</figcaption></figure><figure class="mol" style=""><div class="d"><svg xmlns='http://www.w3.org/2000/svg'
+' fill='#000000'/></svg></div><figcaption>phenol</figcaption></figure><figure class="mol" style=""><div class="d"><svg aria-hidden="true" xmlns='http://www.w3.org/2000/svg'
 width='174px' height='111px' viewBox='3.0 6.8 174.0 110.9'><path d='M 156.5,36.6 L 146.5,53.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 150.9,33.4 L 140.9,50.7' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 143.7,72.0 L 153.8,89.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 129.7,62.2 L 95.0,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 95.0,62.2 L 73.5,99.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 87.6,62.2 L 69.8,92.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 73.5,99.4 L 30.5,99.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 30.5,99.4 L 9.0,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 34.2,92.9 L 16.4,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 9.0,62.2 L 30.5,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 30.5,24.9 L 73.5,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 34.2,31.4 L 69.8,31.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 73.5,24.9 L 95.0,62.2' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt' /><path d='M 74.6,97.5 L 73.5,99.4 L 71.4,99.4' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 32.7,99.4 L 30.5,99.4 L 29.4,97.5' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 10.1,64.0 L 9.0,62.2 L 10.1,60.3' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 29.4,26.8 L 30.5,24.9 L 32.7,24.9' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 71.4,24.9 L 73.5,24.9 L 74.6,26.8' style='fill:none;stroke:#000000;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /><path d='M 153.9 24.9
 Q 153.9 22.0, 155.4 20.4
 Q 156.8 18.8, 159.5 18.8
@@ -2448,8 +2449,8 @@ L 166.8 95.2
     <h1 style="font-size:70px">Thank you</h1>
     <div class="title-rule"></div>
     <p class="sub" style="font-size:19px;line-height:1.9">
-      Anstine, D. M.; Zubatyuk, R.; Isayev, O. <em>Chem. Sci.</em> <strong>2025</strong>, <em>16</em>, 10228.<br>
-      Kalita, B. <em>et al.</em> <em>Angew. Chem. Int. Ed.</em> <strong>2026</strong>, e202516763.<br>
+      Anstine, D. M.; Zubatyuk, R.; Isayev, O. <em>Chem. Sci.</em> <strong>2025</strong>, <em>16</em>, <a href="https://doi.org/10.1039/D4SC08572H" style="color:inherit">10228</a>.<br>
+      Kalita, B. <em>et al.</em> <em>Angew. Chem. Int. Ed.</em> <strong>2026</strong>, <em>65</em>, <a href="https://doi.org/10.1002/anie.202516763" style="color:inherit">e202516763</a>.<br>
       Parr, R. G.; Yang, W. <em>J. Am. Chem. Soc.</em> <strong>1984</strong>, <em>106</em>, 4049 &mdash; Fukui functions.<br>
       Parr, R. G.; Szentp&aacute;ly, L. v.; Liu, S. <em>J. Am. Chem. Soc.</em> <strong>1999</strong>, <em>121</em>, 1922 &mdash; electrophilicity index.
     </p>
@@ -2476,8 +2477,15 @@ function show(n, push=true){
   bar.style.width = ((i) / (slides.length - 1) * 100) + '%';
   const pg = slides[i].querySelector('.pg');
   if (pg) pg.textContent = (i + 1) + ' / ' + slides.length;
-  if (push) history.replaceState(null, '', '#/' + (i + 1));
+  if (push) {
+    try { history.replaceState(null, '', '#/' + (i + 1)); }
+    catch (err) { location.hash = '#/' + (i + 1); }   // file:// in Chrome
+  }
 }
+function fromHash(){
+  return Math.max(0, (parseInt((location.hash.match(/\d+/) || [1])[0], 10) || 1) - 1);
+}
+addEventListener('hashchange', () => { const n = fromHash(); if (n !== i) show(n, false); });
 function fit(){
   const s = Math.min(innerWidth / 1280, innerHeight / 720);
   stage.style.transform = 'scale(' + s + ')';
@@ -2494,6 +2502,7 @@ slides.forEach((s, k) => {
 });
 
 addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
   const k = e.key.toLowerCase();
   if (ov.classList.contains('on') && k !== 'o' && k !== 'escape') return;
   if (k === 'arrowright' || k === ' ' || k === 'pagedown' || k === 'n') { show(i + 1); e.preventDefault(); }
@@ -2524,7 +2533,7 @@ addEventListener('mousemove', () => {
 });
 
 fit();
-show(Math.max(0, (parseInt((location.hash.match(/\d+/) || [1])[0], 10) || 1) - 1), false);
+show(fromHash(), false);
 </script>
 </body>
 </html>
