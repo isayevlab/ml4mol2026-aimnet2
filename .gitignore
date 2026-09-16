@@ -6,3 +6,25 @@ __pycache__/
 *.log
 *.xyz
 .venv/
+
+# AI coding assistants: never commit their config, sessions or memory
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.claude.json
+.codex/
+AGENTS.md
+.cursor/
+.cursorrules
+.cursorignore
+.windsurf/
+.windsurfrules
+.github/copilot-instructions.md
+.copilot/
+.aider*
+.gemini/
+GEMINI.md
+.mcp.json
+.continue/
+.roo/
+.clinerules
