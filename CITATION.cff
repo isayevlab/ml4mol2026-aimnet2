@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this tutorial, please cite it and the AIMNet2 paper below."
+title: "AIMNet2 hands-on tutorial, AiMat Summer School 2026"
+type: software
+authors:
+  - family-names: Isayev
+    given-names: Olexandr
+    affiliation: Carnegie Mellon University
+license: MIT
+repository-code: https://github.com/isayevlab/ml4mol2026-aimnet2
+url: https://isayevlab.github.io/ml4mol2026-aimnet2/
+year: 2026
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Anstine
+      given-names: Dylan M.
+    - family-names: Zubatyuk
+      given-names: Roman
+    - family-names: Isayev
+      given-names: Olexandr
+  title: "AIMNet2: a neural network potential to meet your neutral, charged, organic, and elemental-organic needs"
+  journal: Chemical Science
+  year: 2025
+  volume: 16
+  start: 10228
+  end: 10244
+  doi: 10.1039/D4SC08572H

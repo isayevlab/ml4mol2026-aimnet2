@@ -1,11 +1,18 @@
 __pycache__/
 *.pyc
+*.egg-info/
+.pytest_cache/
+.cache/
 .ipynb_checkpoints/
 .DS_Store
 *.traj
 *.log
 *.xyz
 .venv/
+
+# editors
+.vscode/
+.idea/
 
 # AI coding assistants: never commit their config, sessions or memory
 .claude/

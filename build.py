@@ -82,14 +82,24 @@ ANSWERS = {
 def read_source(stem):
     nb = jupytext.read(ROOT / "source" / f"{stem}.py", fmt="py:percent")
     nb.metadata = dict(METADATA)
+    # jupytext assigns a fresh random cell id on every read, which would dirty
+    # every notebook on every build. Number the cells instead so that the
+    # output depends on the source alone.
+    for i, cell in enumerate(nb.cells):
+        cell["id"] = f"{stem}-{i:02d}"
     return nb
 
 
 def build_notebooks():
+    (ROOT / "notebooks").mkdir(exist_ok=True)
     for stem, name in NAMES.items():
         nb = read_source(stem)
         out = ROOT / "notebooks" / f"{name}.ipynb"
-        jupytext.write(nb, out, fmt="ipynb")
+        # jupytext.write opens the file in text mode without newline="\n", so
+        # on Windows it would emit CRLF; write the string ourselves to keep LF.
+        text = jupytext.writes(nb, fmt="ipynb")
+        out.write_text(text if text.endswith("\n") else text + "\n",
+                       encoding="utf-8", newline="\n")
         print(f"  notebooks/{name}.ipynb")
 
 
@@ -117,10 +127,12 @@ def build_solutions():
         assert replaced_answer, f"{name}: no ANSWER blank found"
         assert "# TODO" not in json.dumps(nb), f"{name}: a TODO survived"
 
-        nb["cells"].insert(0, {"cell_type": "markdown", "metadata": {},
+        nb["cells"].insert(0, {"cell_type": "markdown", "id": f"{name}-key",
+                               "metadata": {},
                                "source": key.splitlines(keepends=True)})
         out = ROOT / "solutions" / f"{name}_ANSWERS.ipynb"
-        out.write_text(json.dumps(nb, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        out.write_text(json.dumps(nb, indent=1, ensure_ascii=False) + "\n",
+                       encoding="utf-8", newline="\n")
         print(f"  solutions/{name}_ANSWERS.ipynb")
 
 

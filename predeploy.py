@@ -68,14 +68,21 @@ for nb_path in sorted(ROOT.glob("*/*.ipynb")):
         check(n_todo == 0, f"{rel}: answer notebook still has {n_todo} TODO marker(s)")
 
 # 4. nothing leaks an absolute local path
-LEAKS = ("/home/" + "claude", "/mnt/" + "user-data")
+# A Windows profile path counts only when it names a real user; the install
+# guide legitimately shows the placeholder C:\Users\<you>\...
+LEAKS = (re.escape("/home/" + "claude"), re.escape("/mnt/" + "user-data"),
+         r"C:[\\/]Users[\\/](?![<&$%{])")
 for f in [p for pat in ("*.py", "*.ipynb", "*.html", "*.md", "*.txt")
           for p in ROOT.rglob(pat)]:
+    rel = f.relative_to(ROOT)
     if f.name == "predeploy.py":
         continue                       # this file names the patterns it looks for
+    if any(part.startswith(".") for part in rel.parts):
+        continue                       # .venv/, .git/ and other untracked dot-dirs
     text = f.read_text(encoding="utf-8", errors="ignore")
     for leak in LEAKS:
-        check(leak not in text, f"{f.relative_to(ROOT)}: contains local path {leak}")
+        m = re.search(leak, text)
+        check(m is None, f"{rel}: contains local path {m.group(0) if m else ''}")
 
 # 5. house style in notebook prose
 for nb_path in sorted((ROOT / "notebooks").glob("*.ipynb")):

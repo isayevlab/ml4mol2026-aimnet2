@@ -1,0 +1,19 @@
+name: check
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install jupytext
+      # source/ is the single source of truth; the committed notebooks must
+      # be exactly what build.py produces from it
+      - run: python build.py
+      - run: git diff --exit-code -- notebooks solutions
+      - run: python check_notebooks.py
+      - run: python predeploy.py
