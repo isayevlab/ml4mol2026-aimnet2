@@ -62,9 +62,9 @@ def _pip(*packages):
         raise RuntimeError("pip install failed; see the output above")
 
 try:
-    import aimnet, rdkit, ase          # noqa: F401
+    import aimnet, rdkit, ase, py3Dmol  # noqa: F401
 except ImportError:
-    _pip("aimnet[ase]", "rdkit", "warp-lang<1.18")
+    _pip("aimnet[ase]", "rdkit", "py3Dmol", "warp-lang<1.18")
 import numpy as np
 import torch
 from aimnet.calculators import AIMNet2Calculator, AIMNet2ASE
@@ -75,7 +75,7 @@ print(f"Python {sys.version.split()[0]}   PyTorch {torch.__version__}   GPU avai
 _ = AIMNet2Calculator("aimnet2")          # downloads parameters on first use
 print("Model loaded.")
 # %% [markdown]
-# ### Two helper functions
+# ### Three helper functions
 #
 # These appear in every notebook of this tutorial. They are short deliberately:
 # nothing in this material is hidden from you.
@@ -124,6 +124,51 @@ def attach(atoms, model="aimnet2"):
                             charge=atoms.info.get("charge", 0),
                             mult=atoms.info.get("mult", 1))
     return atoms
+
+import py3Dmol
+from ase.data import chemical_symbols
+
+def show(structures, labels=None, animate=False, loop="backAndForth",
+         width=380, height=300):
+    """
+    Interactive three-dimensional view. Drag to rotate, scroll to zoom.
+
+    `structures` is one Atoms object or a list of them. A list is drawn side
+    by side or, with `animate=True`, played as a film. `labels` is a list of
+    per-atom strings, one list per structure, printed on the atoms.
+
+    The viewer is 3Dmol.js, fetched from the web when the cell runs, so it
+    needs a network connection. Nothing in this tutorial depends on it: every
+    result is also printed as text.
+    """
+    if isinstance(structures, Atoms):
+        structures = [structures]
+        labels = None if labels is None else [labels]
+
+    def xyz(a):
+        return f"{len(a)}\n\n" + "".join(
+            f"{chemical_symbols[z]} {x:.5f} {y:.5f} {zz:.5f}\n"
+            for z, (x, y, zz) in zip(a.numbers, a.positions))
+
+    style = {"stick": {"radius": 0.14}, "sphere": {"scale": 0.24}}
+    if animate:
+        v = py3Dmol.view(width=width, height=height)
+        v.addModelsAsFrames("".join(xyz(a) for a in structures), "xyz")
+        v.setStyle(style)
+        v.animate({"loop": loop, "interval": 80})
+    else:
+        n = len(structures)
+        v = py3Dmol.view(width=width * n, height=height, viewergrid=(1, n))
+        for k, a in enumerate(structures):
+            v.addModel(xyz(a), "xyz", viewer=(0, k))
+            v.setStyle(style, viewer=(0, k))
+            for text, (x, y, z) in zip(labels[k] if labels else [], a.positions):
+                if str(text):
+                    v.addLabel(str(text), {"position": {"x": x, "y": y, "z": z},
+                                           "fontSize": 11, "backgroundOpacity": 0.55,
+                                           "inFront": True}, viewer=(0, k))
+    v.zoomTo()
+    v.show()
 
 EV2KCAL = 23.060548     # kcal per mol, per eV
 KT_298 = 0.5924         # kT at 298.15 K, in kcal/mol
@@ -202,7 +247,7 @@ DT = 0.25                                  # fs
 N_EQ = 800 if GPU else 400                 # discarded: equilibration
 N_STEPS = 4000 if GPU else 1600            # sampled
 SAMPLE = 2                                 # record every SAMPLE steps
-trace = {}
+trace, film = {}, {}
 
 print(f"{N_EQ} equilibration steps then {N_STEPS} sampled, "
       f"{DT} fs each: {N_STEPS * DT:.0f} fs of sampled trajectory per temperature\n")
@@ -221,15 +266,16 @@ for T in (300, 500):
 
     dynamics.run(N_EQ)                     # equilibrate, record nothing
 
-    hbond, temperature = [], []
+    hbond, temperature, frames = [], [], []
     dynamics.attach(lambda a=a, hb=hbond, tp=temperature:
                     (hb.append(a.get_distance(h_donor, o_acceptor)),
                      tp.append(a.get_temperature())), interval=SAMPLE)
+    dynamics.attach(lambda a=a, fr=frames: fr.append(a.copy()), interval=20)
     t0 = time.perf_counter()
     dynamics.run(N_STEPS)
     wall = time.perf_counter() - t0
 
-    trace[T] = np.array(hbond)
+    trace[T] = np.array(hbond); film[T] = frames
     temperature = np.array(temperature)
 
     # Mean, spread, 95th percentile and maximum are all reported. The markdown
@@ -254,6 +300,14 @@ ax.text(2, 2.25, "upper limit for a hydrogen bond", fontsize=9, color="0.45")
 ax.set_xlabel("time / fs"); ax.set_ylabel(r"H$\cdots$O distance / $\AA$")
 ax.set_title("Intramolecular hydrogen bond in salicylaldehyde")
 ax.legend(frameon=False); fig.tight_layout(); plt.show()
+
+# %% [markdown]
+# The 500 K trajectory as a film, one frame every 5 fs. The ring breathes and
+# the aldehyde group rocks, but the hydroxyl hydrogen, though it vibrates,
+# stays pointed at the carbonyl oxygen: the hydrogen bond holds.
+
+# %%
+show(film[500], animate=True, loop="forward")
 
 # %% [markdown]
 # **Read this output carefully, because the honest conclusion is not the obvious

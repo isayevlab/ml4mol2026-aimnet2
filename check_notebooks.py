@@ -22,7 +22,7 @@ ROOT = pathlib.Path(__file__).parent
 EXERCISES = {"3_activity_conformers", "6_activity_ir_spectra", "7_activity_reactivity"}
 ALLOWED_TOP_LEVEL = {
     "subprocess", "sys", "warnings", "numpy", "torch", "aimnet", "ase",
-    "rdkit", "matplotlib", "sella", "IPython", "itertools",
+    "rdkit", "matplotlib", "sella", "IPython", "itertools", "py3Dmol", "io",
     "math", "collections", "time", "os",
 }
 # fallback for cells that ast cannot parse (IPython magics, shell escapes)

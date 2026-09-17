@@ -61,9 +61,9 @@ def _pip(*packages):
         raise RuntimeError("pip install failed; see the output above")
 
 try:
-    import aimnet, rdkit, ase          # noqa: F401
+    import aimnet, rdkit, ase, py3Dmol  # noqa: F401
 except ImportError:
-    _pip("aimnet[ase]", "rdkit", "warp-lang<1.18")
+    _pip("aimnet[ase]", "rdkit", "py3Dmol", "warp-lang<1.18")
 import numpy as np
 import torch
 from aimnet.calculators import AIMNet2Calculator, AIMNet2ASE
@@ -74,7 +74,7 @@ print(f"Python {sys.version.split()[0]}   PyTorch {torch.__version__}   GPU avai
 _ = AIMNet2Calculator("aimnet2")          # downloads parameters on first use
 print("Model loaded.")
 # %% [markdown]
-# ### Two helper functions
+# ### Three helper functions
 #
 # These appear in every notebook of this tutorial. They are short deliberately:
 # nothing in this material is hidden from you.
@@ -124,6 +124,51 @@ def attach(atoms, model="aimnet2"):
                             mult=atoms.info.get("mult", 1))
     return atoms
 
+import py3Dmol
+from ase.data import chemical_symbols
+
+def show(structures, labels=None, animate=False, loop="backAndForth",
+         width=380, height=300):
+    """
+    Interactive three-dimensional view. Drag to rotate, scroll to zoom.
+
+    `structures` is one Atoms object or a list of them. A list is drawn side
+    by side or, with `animate=True`, played as a film. `labels` is a list of
+    per-atom strings, one list per structure, printed on the atoms.
+
+    The viewer is 3Dmol.js, fetched from the web when the cell runs, so it
+    needs a network connection. Nothing in this tutorial depends on it: every
+    result is also printed as text.
+    """
+    if isinstance(structures, Atoms):
+        structures = [structures]
+        labels = None if labels is None else [labels]
+
+    def xyz(a):
+        return f"{len(a)}\n\n" + "".join(
+            f"{chemical_symbols[z]} {x:.5f} {y:.5f} {zz:.5f}\n"
+            for z, (x, y, zz) in zip(a.numbers, a.positions))
+
+    style = {"stick": {"radius": 0.14}, "sphere": {"scale": 0.24}}
+    if animate:
+        v = py3Dmol.view(width=width, height=height)
+        v.addModelsAsFrames("".join(xyz(a) for a in structures), "xyz")
+        v.setStyle(style)
+        v.animate({"loop": loop, "interval": 80})
+    else:
+        n = len(structures)
+        v = py3Dmol.view(width=width * n, height=height, viewergrid=(1, n))
+        for k, a in enumerate(structures):
+            v.addModel(xyz(a), "xyz", viewer=(0, k))
+            v.setStyle(style, viewer=(0, k))
+            for text, (x, y, z) in zip(labels[k] if labels else [], a.positions):
+                if str(text):
+                    v.addLabel(str(text), {"position": {"x": x, "y": y, "z": z},
+                                           "fontSize": 11, "backgroundOpacity": 0.55,
+                                           "inFront": True}, viewer=(0, k))
+    v.zoomTo()
+    v.show()
+
 EV2KCAL = 23.060548     # kcal per mol, per eV
 KT_298 = 0.5924         # kT at 298.15 K, in kcal/mol
 FMAX = 0.02             # force convergence threshold, eV per Angstrom
@@ -144,6 +189,12 @@ print(f"{'atom':<8}{'partial charge / e':>20}")
 for i, (z, qi) in enumerate(zip(ethanol.get_atomic_numbers(), q)):
     print(f"{chemical_symbols[z]}{i:<7}{qi:>20.4f}")
 print(f"{'sum':<8}{q.sum():>20.4f}")
+
+# %% [markdown]
+# The same charges, printed on the atoms.
+
+# %%
+show(ethanol, labels=[f"{qi:+.2f}" for qi in q])
 
 # %% [markdown]
 # The oxygen carries the most negative charge and the hydroxyl hydrogen the most
@@ -194,9 +245,11 @@ print(f"six molecules containing P, S, Si, B, Se and I: {time.perf_counter()-t0:
 # %%
 from ase.optimize import LBFGS
 
+pair = []
 for smiles, label in (("CC(=O)O", "acetic acid"), ("CC(=O)[O-]", "acetate")):
     a = attach(build(smiles))
     LBFGS(a, logfile=None).run(fmax=FMAX, steps=400)
+    pair.append(a)
     qi = a.get_charges()
     ox = [i for i, z in enumerate(a.numbers) if z == 8]
     c = [i for i, z in enumerate(a.numbers) if z == 6][1]
@@ -204,6 +257,14 @@ for smiles, label in (("CC(=O)O", "acetic acid"), ("CC(=O)[O-]", "acetate")):
           f"O charges {qi[ox[0]]:+.3f} {qi[ox[1]]:+.3f} e   "
           f"C-O bonds {a.get_distance(c, ox[0]):.3f} {a.get_distance(c, ox[1]):.3f} A   "
           f"|mu| {np.linalg.norm(a.get_dipole_moment()):.2f} e*A")
+
+# %% [markdown]
+# Acetic acid on the left, acetate on the right, with the charge on each
+# heavy atom. The two oxygens of acetate carry the same charge.
+
+# %%
+show(pair, labels=[[f"{x:+.2f}" if z > 1 else "" for x, z in zip(a.get_charges(), a.numbers)]
+                   for a in pair])
 
 # %% [markdown]
 # In acetic acid the two oxygens are inequivalent: one is a carbonyl oxygen, the
@@ -241,9 +302,13 @@ def proton_position(a):
             min(d[i][j] for i in O for j in H))
 
 glycine = attach(build("[NH3+]CC(=O)[O-]", charge=0))
+zwitterion = glycine.copy()              # kept, to look at afterwards
 print("starting from the zwitterion:  N-H {:.3f} A   O-H {:.3f} A".format(*proton_position(glycine)))
 LBFGS(glycine, logfile=None).run(fmax=FMAX, steps=500)
 print("after optimisation:            N-H {:.3f} A   O-H {:.3f} A".format(*proton_position(glycine)))
+
+# %%
+show([zwitterion, glycine])              # left: as built; right: after optimisation
 
 # %% [markdown]
 # The shortest O–H distance falls from about 1.7 Å to about 0.98 Å: the proton

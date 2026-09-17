@@ -62,7 +62,8 @@ ninety minutes, on a laptop.</p>
   <div class="k">energy &rarr; geometry &rarr; conformers &rarr; dynamics &rarr; reactions &rarr; spectra &rarr; reactivity</div>
   <p>Nine notebooks, in one direction. Every concept is defined where it is first
   needed. You need to be able to read Python; you do not need to have run a quantum
-  chemistry calculation before.</p>
+  chemistry calculation before. Molecules are shown in an interactive 3D viewer
+  wherever the structure itself is the point.</p>
 </div>
 
 <a class="big" href="install.html">
@@ -219,7 +220,7 @@ source .venv/bin/activate
 
 <span class="c"># install (about 150 MB)</span>
 pip install --upgrade pip
-pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
+pip install "aimnet[ase]" rdkit py3Dmol sella matplotlib jupyterlab
 
 <span class="c"># get the notebooks</span>
 git clone {GH}.git
@@ -241,7 +242,7 @@ py -3.12 -m venv .venv
 
 <span class="c"># install (roughly 120 MB torch plus 150 MB warp)</span>
 python -m pip install --upgrade pip
-pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
+pip install "aimnet[ase]" rdkit py3Dmol sella matplotlib jupyterlab
 
 <span class="c"># get the notebooks</span>
 git clone {GH}.git
@@ -260,7 +261,7 @@ jupyter lab</code></pre>
     <p>The PyTorch published on PyPI for Windows is CPU-only; the CUDA build comes
     from PyTorch's own index. Install it <em>before</em> AIMNet2:</p>
     <pre><code>pip install torch --index-url https://download.pytorch.org/whl/cu126
-pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab</code></pre>
+pip install "aimnet[ase]" rdkit py3Dmol sella matplotlib jupyterlab</code></pre>
     <p>The <code>cu126</code> build needs NVIDIA driver 525 or newer; the current
     options are listed at
     <a href="https://pytorch.org/get-started/locally/">pytorch.org/get-started/locally</a>.
@@ -279,7 +280,7 @@ source .venv/bin/activate
 
 <span class="c"># install (about 3 GB on x86-64, because the PyTorch wheel bundles CUDA)</span>
 pip install --upgrade pip
-pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
+pip install "aimnet[ase]" rdkit py3Dmol sella matplotlib jupyterlab
 
 <span class="c"># get the notebooks</span>
 git clone {GH}.git
@@ -291,11 +292,11 @@ jupyter lab</code></pre>
   driver version with <code>nvidia-smi</code> first; if it is below 580, install torch
   from the CUDA 12.6 index <em>before</em> the rest:</p>
   <pre><code>pip install torch --index-url https://download.pytorch.org/whl/cu126
-pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab</code></pre>
+pip install "aimnet[ase]" rdkit py3Dmol sella matplotlib jupyterlab</code></pre>
   <p>On a laptop without an NVIDIA GPU, install the CPU build first instead. It cuts
   the download from about 3&nbsp;GB to about 200&nbsp;MB:</p>
   <pre><code>pip install torch --index-url https://download.pytorch.org/whl/cpu
-pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab</code></pre>
+pip install "aimnet[ase]" rdkit py3Dmol sella matplotlib jupyterlab</code></pre>
   <p>Either way, confirm with:</p>
   <pre><code>python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 </div>
@@ -305,7 +306,7 @@ pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab</code></pre>
 <pre><code>conda create -n aimnet2 python=3.12 -y
 conda activate aimnet2
 
-pip install "aimnet[ase]" rdkit sella matplotlib jupyterlab
+pip install "aimnet[ase]" rdkit py3Dmol sella matplotlib jupyterlab
 
 git clone {GH}.git
 cd ml4mol2026-aimnet2
@@ -385,6 +386,15 @@ NOTEBOOKS_PAGE = f"""
 <p>Every notebook installs its own dependencies in the first cell, so you can open
 any one of them cold. If you are running locally you only need the install once;
 the first cell then finds the packages already present and skips straight through.</p>
+
+<p>Where a structure is the point, the notebooks draw it: an interactive
+three-dimensional view you can rotate and zoom. The first molecule, the charges
+printed on its atoms, an optimisation played as a film, anti and gauche butane side
+by side, the three lowest conformers, a molecular dynamics trajectory, a transition
+state moving along its imaginary mode, the strongest infrared mode, the Fukui
+indices on each atom, and six waters in their periodic box. The viewer is
+<a href="https://3dmol.csb.pitt.edu/">3Dmol.js</a> through <code>py3Dmol</code>;
+it needs a network connection, and every result is also printed as text.</p>
 
 {notebook_list()}
 
@@ -564,6 +574,14 @@ reaches 0.02 eV/&#197; in 26 L-BFGS steps and 0.01 in 154, six times the work. T
 butane's anti&ndash;gauche gap is 0.33 kcal/mol at <code>fmax</code>&nbsp;=&nbsp;0.02
 and 0.31 at 0.005, and its Boltzmann population changes by half a percentage point.
 For ethylene glycol the first three gaps agree to better than 0.01 kcal/mol.</p>
+
+<h3>The 3D viewer is an empty box, or shows nothing at all</h3>
+<p>The viewer is 3Dmol.js, fetched from the web when the cell runs, so it needs a
+network connection even in a local install; a content blocker that stops scripts
+from <code>cdn.jsdelivr.net</code> has the same effect. In JupyterLab a
+notebook reopened from disk is <em>untrusted</em>, and untrusted JavaScript output
+is not rendered: run the cell again. Nothing in the tutorial depends on the
+viewer; every result is also printed as text.</p>
 
 <h3>My conformer count differs from the answer key</h3>
 <p>Expected for the flexible systems. Conformer generation is stochastic, so the exact

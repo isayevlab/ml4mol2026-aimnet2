@@ -70,6 +70,13 @@ Every notebook installs its own dependencies in its first cell and stands alone,
 so a student who arrives late, or whose kernel dies, can open any notebook and
 start there.
 
+Wherever the structure itself is the point, the notebook draws it in an
+interactive 3D viewer (py3Dmol): the first molecule, charges on atoms, an
+optimisation as a film, the lowest conformers, an MD trajectory, a transition
+state moving along its imaginary mode, the strongest infrared mode, Fukui indices,
+a periodic water box. The viewer needs a network connection; every result is also
+printed as text.
+
 ## The nine notebooks
 
 | | Notebook | What it establishes | |

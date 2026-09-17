@@ -231,6 +231,14 @@ butane's anti&ndash;gauche gap is 0.33 kcal/mol at <code>fmax</code>&nbsp;=&nbsp
 and 0.31 at 0.005, and its Boltzmann population changes by half a percentage point.
 For ethylene glycol the first three gaps agree to better than 0.01 kcal/mol.</p>
 
+<h3>The 3D viewer is an empty box, or shows nothing at all</h3>
+<p>The viewer is 3Dmol.js, fetched from the web when the cell runs, so it needs a
+network connection even in a local install; a content blocker that stops scripts
+from <code>cdn.jsdelivr.net</code> has the same effect. In JupyterLab a
+notebook reopened from disk is <em>untrusted</em>, and untrusted JavaScript output
+is not rendered: run the cell again. Nothing in the tutorial depends on the
+viewer; every result is also printed as text.</p>
+
 <h3>My conformer count differs from the answer key</h3>
 <p>Expected for the flexible systems. Conformer generation is stochastic, so the exact
 number varies between runs and between machines. The energy <em>ordering</em> and the

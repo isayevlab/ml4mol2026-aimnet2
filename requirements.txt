@@ -3,6 +3,7 @@
 aimnet[ase]>=0.2.0      # pulls torch>=2.8, ase>=3.27, warp-lang, numpy
 warp-lang<1.18          # 1.18 wheels need NVIDIA driver 580 or newer
 rdkit>=2024.3           # structure generation from SMILES
+py3Dmol>=2.0            # interactive 3D views inside the notebooks
 sella>=2.4              # saddle-point optimiser, notebook 5 only
 matplotlib>=3.8         # plots
 jupyterlab>=4.0         # to open the notebooks
